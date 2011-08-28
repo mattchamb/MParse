@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MParse
 {
     public class Production
     {
         public int Head { get; private set; }
-        public IList<int> Tail { get; private set; }
+        public int[] Tail { get; private set; }
 
-        public Production(int head, IList<int> tail)
+        public Production(int head, int[] tail)
         {
             Head = head;
             Tail = tail;
@@ -20,25 +18,41 @@ namespace MParse
         {
             throw new NotImplementedException();
         }
+
+        public int Length
+        {
+            get { return Tail.Length; }
+        }
     }
 
+  
     public class Item
     {
-        public int CurrentPosition { get; private set; }
-
-        public Production Production { get; private set; }
-
         public Item(Production production) : this(0, production) {}
 
         public Item(int currentPosition, Production production)
         {
+            if(currentPosition < 0)
+            {
+                throw new ArgumentException("currentPosition cannot be less than zero.", "currentPosition");
+            }
             CurrentPosition = currentPosition;
-            Production = production;
+            ItemProduction = production;
+        }
+
+        public int CurrentPosition { get; private set; }
+        public Production ItemProduction { get; private set; }
+
+        public bool CanAdvanceDot
+        {
+            get { return CurrentPosition < ItemProduction.Length; }
         }
 
         public Item AdvanceDot()
         {
-            throw new NotImplementedException();
+            if(!CanAdvanceDot)
+                throw new InvalidOperationException("Cannot advance the dot any more in this production.");
+            return new Item(CurrentPosition + 1, ItemProduction);
         }
     }
 
