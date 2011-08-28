@@ -15,7 +15,6 @@ namespace MParse
         {
             if(tail == null || tail.Length == 0)
                 throw new ArgumentException("The tail must be a valid Integer array.", "tail");
-
             Head = head;
             Tail = tail;
         }
@@ -43,6 +42,11 @@ namespace MParse
             get { return Tail.Length; }
         }
 
+        public int this[int index]
+        {
+            get { return Tail[index]; }
+        }
+
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
@@ -65,6 +69,7 @@ namespace MParse
                 return (Head*397) ^ (Tail != null ? Tail.GetHashCode() : 0);
             }
         }
+
         public override string ToString()
         {
             var result = new StringBuilder();

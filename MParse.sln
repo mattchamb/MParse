@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MParse", "MParse\MParse.csproj", "{974C669C-84DC-480B-969E-D850AA81584B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MParse.Tests", "MParse.Tests\MParse.Tests.csproj", "{FA85A909-F4D2-4823-B8E4-FAB8ACECB26C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{974C669C-84DC-480B-969E-D850AA81584B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{974C669C-84DC-480B-969E-D850AA81584B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{974C669C-84DC-480B-969E-D850AA81584B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA85A909-F4D2-4823-B8E4-FAB8ACECB26C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA85A909-F4D2-4823-B8E4-FAB8ACECB26C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA85A909-F4D2-4823-B8E4-FAB8ACECB26C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA85A909-F4D2-4823-B8E4-FAB8ACECB26C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

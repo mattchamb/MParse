@@ -2,7 +2,7 @@
 
 namespace MParse
 {
-    internal class DummyGrammarProvider : GrammarProvider
+    public class DummyGrammarProvider : GrammarProvider
     {
         internal enum Tokens
         {

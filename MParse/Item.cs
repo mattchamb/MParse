@@ -22,12 +22,17 @@ namespace MParse
 
         public bool CanAdvanceDot
         {
-            get { return CurrentPosition < ItemProduction.Length; }
+            get { return CurrentPosition <= ItemProduction.Length; }
         }
 
         public int NextToken
         {
-            get { return ItemProduction.Tail[CurrentPosition]; }
+            get
+            {
+                if(CurrentPosition >= ItemProduction.Length)
+                    throw new InvalidOperationException("Cannot get NextToken when the current position is at the end of the item.");
+                return ItemProduction.Tail[CurrentPosition];
+            }
         }
 
         public Item AdvanceDot()
@@ -72,6 +77,8 @@ namespace MParse
                 result.Append(ItemProduction.Tail[i]);
                 result.Append(" ");
             }
+            if(CurrentPosition >= ItemProduction.Length)
+                result.Append(". ");
             return result.ToString();
         }
 
