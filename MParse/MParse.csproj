@@ -66,7 +66,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IGrammarProvider.cs" />
+    <Compile Include="DummyGrammarProvider.cs" />
+    <Compile Include="GrammarProvider.cs" />
+    <Compile Include="Production.cs" />
+    <Compile Include="Item.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
