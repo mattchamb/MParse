@@ -68,5 +68,11 @@ namespace MParse.Tests
             var result = Grammar.FollowSet(4);
             Assert.IsTrue(result.SequenceEqual(expected));
         }
+
+        [Test]
+        public void StatesTest()
+        {
+            var states = Grammar.CreateStates();
+        }
     }
 }

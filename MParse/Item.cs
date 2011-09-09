@@ -5,6 +5,12 @@ namespace MParse
 {
     public class Item
     {
+
+        /// <summary>
+        /// Create an item from this production with the dot at position zero.
+        /// </summary>
+        /// <param name="production"></param>
+        /// <returns></returns>
         public Item(Production production) : this(0, production) {}
 
         public Item(int currentPosition, Production production)
@@ -25,11 +31,16 @@ namespace MParse
             get { return CurrentPosition <= ItemProduction.Length; }
         }
 
+        public bool HasNextToken
+        {
+            get { return CurrentPosition < ItemProduction.Length; }
+        }
+
         public int NextToken
         {
             get
             {
-                if(CurrentPosition >= ItemProduction.Length)
+                if (!HasNextToken)
                     throw new InvalidOperationException("Cannot get NextToken when the current position is at the end of the item.");
                 return ItemProduction.Tail[CurrentPosition];
             }

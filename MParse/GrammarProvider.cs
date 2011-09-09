@@ -7,7 +7,6 @@ namespace MParse
     public abstract class GrammarProvider
     {
         /// <summary>
-        /// Implemented by derived classes.
         /// This function provides the productions that define the grammar.
         /// </summary>
         /// <returns>
@@ -15,6 +14,19 @@ namespace MParse
         /// of representing a grammar.
         /// </returns>
         public abstract Production[] GetProductions();
+
+        
+        /// <summary>
+        /// This function returns all of the grammar symbols in the grammar.
+        /// </summary>
+        /// <returns></returns>
+        public abstract int[] GetGrammarSymbols();
+
+        /// <summary>
+        /// Returns the item that represents the starting point of the grammar.
+        /// </summary>
+        /// <returns></returns>
+        public abstract Item GetAugmentedState();
 
         /// <summary>
         /// Takes a symbol and tells you if the symbol is a Terminal.
@@ -36,12 +48,102 @@ namespace MParse
             _followSetCache = new Dictionary<int, List<int>>();
         }
 
+
+        /// <summary>
+        /// Returns the set of items that can be transitioned to from inputItems
+        /// under input "symbol".
+        /// Refer Dragon Book pg 246
+        /// </summary>
+        /// <param name="inputItems"></param>
+        /// <param name="symbol"></param>
+        /// <returns></returns>
+        public virtual List<Item> Goto(IEnumerable<Item> inputItems, int symbol)
+        {
+            var items = inputItems.Where(inputItem => inputItem.HasNextToken && inputItem.NextToken == symbol);
+            items = items.Select(inputItem => inputItem.AdvanceDot());
+            return GetClosure(items);
+        }
+
+        /// <summary>
+        /// Create the list of states, which internally contain the transitions
+        /// out of that state based upon symbol inputs.
+        /// Refer Dragon Book pg 246
+        /// </summary>
+        /// <returns></returns>
+        public virtual List<ParserState> CreateStates()
+        {
+            //The first state is the closure of the starting symbol.
+            var states = new List<ParserState>
+                             {
+                                 new ParserState(GetClosure(GetAugmentedState()))
+                             };
+            var grammarSymbols = GetGrammarSymbols();
+            //iterate through the states list.
+            //  this list grows as we iterate
+            for (int i = 0; i < states.Count; i++)
+            {
+                var state = states[i];
+                foreach (var grammarSymbol in grammarSymbols)
+                {
+                    //get the set of items to transition to for this input
+                    var gotoForSymbol = Goto(state.Items, grammarSymbol);
+                    //if the state exists
+                    if(gotoForSymbol.Count > 0)
+                    {
+                        ParserState transitionTo;
+                        if(!StateAlreadyExists(states, gotoForSymbol, out transitionTo))
+                        {
+                            //if there is not already a state with this set of items
+                            //  then create a new state with that set of items
+                            //  and add it to the states list
+                            transitionTo = new ParserState(gotoForSymbol);
+                            states.Add(transitionTo);
+                        }
+                        //add the state transition from the current state 
+                        //  to the state with the goto set.
+                        state.AddTransition(grammarSymbol, transitionTo);
+                    }
+                }
+            }
+            return states;
+        }
+
+
+        /// <summary>
+        /// If there exists a state in states with the same set of Items as items
+        /// then return true and assign state to the reference of the existing state.
+        /// otherwise return false
+        /// </summary>
+        /// <param name="states"></param>
+        /// <param name="items"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        private bool StateAlreadyExists(IEnumerable<ParserState> states, IEnumerable<Item> items, out ParserState state)
+        {
+            foreach (var parserState in states)
+            {
+                bool areEqual = items.All(item => parserState.Items.Contains(item)) && parserState.Items.Count() == items.Count();
+                if(areEqual)
+                {
+                    state = parserState;
+                    return true;
+                }
+            }
+            state = null;
+            return false;
+        }
+
+        private List<Item> GetClosure(Item item)
+        {
+            return GetClosure(new[] {item});
+        }
+
         /// <summary>
         /// Returns the Closure of the set of items passed to this function.
         /// </summary>
         /// <param name="items"></param>
         /// <returns></returns>
-        public virtual List<Item> GetClosure(List<Item> items)
+        public virtual List<Item> GetClosure(IEnumerable<Item> items)
         {
             var productions = GetProductions();
 
@@ -57,7 +159,7 @@ namespace MParse
                 {
                     var item = closure[j];
                     //for each production that has the non-terminal after the dot as its head
-                    foreach (var prod in productions.Where(h => h.Head == item.NextToken))
+                    foreach (var prod in productions.Where(h => item.HasNextToken && h.Head == item.NextToken))
                     {
                         var newItem = new Item(prod);
                         if (!closure.Contains(newItem))

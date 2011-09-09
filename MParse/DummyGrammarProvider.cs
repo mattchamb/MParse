@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace MParse
 {
@@ -26,6 +27,26 @@ namespace MParse
                            new Production((int) Tokens.B, new[] {(int) Tokens.Zero}),
                            new Production((int) Tokens.B, new[] {(int) Tokens.One}),
                        };
+        }
+
+        public override int[] GetGrammarSymbols()
+        {
+            return
+                new[]
+                    {
+                        (int) Tokens.S,
+                        (int) Tokens.E,
+                        (int) Tokens.B,
+                        (int) Tokens.Plus,
+                        (int) Tokens.Times,
+                        (int) Tokens.Zero,
+                        (int) Tokens.One
+                    };
+        }
+
+        public override Item GetAugmentedState()
+        {
+            return new Item(new Production((int) Tokens.S, new[] {(int) Tokens.E}));
         }
 
         public override bool IsTerminal(int token)
