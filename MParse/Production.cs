@@ -7,16 +7,21 @@ namespace MParse
 {
     public class Production : IEquatable<Production>
     {
-        public int Head { get; private set; }
-        public int[] Tail { get; private set; }
+        public NonTerminal Head { get; private set; }
+        public GrammarSymbol[] Tail { get; private set; }
 
         private List<Item> _items;
 
-        public Production(int head, int[] tail)
+        public Production(GrammarSymbol head, GrammarSymbol[] tail)
         {
             if(tail == null || tail.Length == 0)
                 throw new ArgumentException("The tail must be a valid Integer array.", "tail");
-            Head = head;
+
+            var headNonTerminal = head as NonTerminal;
+            if(headNonTerminal == null)
+                throw new ArgumentException("The head must be a non-terminal", "head");
+
+            Head = headNonTerminal;
             Tail = tail;
         }
 
@@ -43,7 +48,7 @@ namespace MParse
             get { return Tail.Length; }
         }
 
-        public int this[int index]
+        public GrammarSymbol this[int index]
         {
             get { return Tail[index]; }
         }
@@ -67,7 +72,7 @@ namespace MParse
         {
             unchecked
             {
-                return (Head*397) ^ (Tail != null ? Tail.GetHashCode() : 0);
+                return Head.GetHashCode() ^ (Tail != null ? Tail.GetHashCode() : 0);
             }
         }
 

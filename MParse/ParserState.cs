@@ -7,40 +7,27 @@ namespace MParse
 {
     public class ParserState : IEquatable<ParserState>
     {
-        //TODO: Refactor so this is not stupid.
-        private bool IsTerminal(int token)
-        {
-            return
-                new[]
-                    {
-                        (int) DummyGrammarProvider.Tokens.Plus,
-                        (int) DummyGrammarProvider.Tokens.Times,
-                        (int) DummyGrammarProvider.Tokens.Zero,
-                        (int) DummyGrammarProvider.Tokens.One
-                    }.Any(x => x == token);
-        }
-
-        private readonly Dictionary<int, ParserState> _stateTransitions;
+        private readonly Dictionary<GrammarSymbol, ParserState> _stateTransitions;
         private readonly List<Item> _itemsInState;
 
         //Describes the transition from this state to another state under the given input symbol.
-        public Dictionary<int, ParserState> StateTransitions { get { return _stateTransitions; } }
+        public Dictionary<GrammarSymbol, ParserState> StateTransitions { get { return _stateTransitions; } }
         public IEnumerable<Item> Items { get { return _itemsInState; } }
 
         public ParserState(IEnumerable<Item> items)
         {
-            _stateTransitions = new Dictionary<int, ParserState>();
+            _stateTransitions = new Dictionary<GrammarSymbol, ParserState>();
             _itemsInState = new List<Item>(items);
         }
 
-        public ParserState AddTransition(int symbol, List<Item> items)
+        public ParserState AddTransition(GrammarSymbol symbol, List<Item> items)
         {
             var newState = new ParserState(items);
             _stateTransitions.Add(symbol, newState);
             return newState;
         }
 
-        public ParserState AddTransition(int symbol, ParserState transitionTo)
+        public ParserState AddTransition(GrammarSymbol symbol, ParserState transitionTo)
         {
             if(_stateTransitions.ContainsKey(symbol))
                 throw new Exception("Conflict");

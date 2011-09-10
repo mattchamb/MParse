@@ -36,7 +36,7 @@ namespace MParse
             get { return CurrentPosition < ItemProduction.Length; }
         }
 
-        public int NextToken
+        public GrammarSymbol NextToken
         {
             get
             {

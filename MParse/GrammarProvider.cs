@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace MParse
 {
-    public abstract class GrammarProvider
+    public interface IGrammarProvider
     {
         /// <summary>
         /// This function provides the productions that define the grammar.
@@ -14,20 +13,70 @@ namespace MParse
         /// An array of productions as defined by the underlying method
         /// of representing a grammar.
         /// </returns>
-        public abstract Production[] GetProductions();
+        Production[] GetProductions();
 
-        
         /// <summary>
         /// This function returns all of the grammar symbols in the grammar.
         /// </summary>
         /// <returns></returns>
-        public abstract int[] GetGrammarSymbols();
+        GrammarSymbol[] GetGrammarSymbols();
 
         /// <summary>
         /// Returns the item that represents the starting point of the grammar.
         /// </summary>
         /// <returns></returns>
-        public abstract Item GetAugmentedState();
+        Item GetAugmentedState();
+    }
+
+    public interface IGrammarOperator
+    {
+        /// <summary>
+        /// Returns the set of items that can be transitioned to from inputItems
+        /// under input "symbol".
+        /// Refer Dragon Book pg 246
+        /// </summary>
+        /// <param name="inputItems"></param>
+        /// <param name="symbol"></param>
+        /// <returns></returns>
+        List<Item> Goto(IEnumerable<Item> inputItems, GrammarSymbol symbol);
+
+        /// <summary>
+        /// Create the list of states, which internally contain the transitions
+        /// out of that state based upon symbol inputs.
+        /// Refer Dragon Book pg 246
+        /// </summary>
+        /// <returns></returns>
+        List<ParserState> CreateStates();
+
+        /// <summary>
+        /// Returns the Closure of the set of items passed to this function.
+        /// </summary>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        List<Item> GetClosure(IEnumerable<Item> items);
+
+        /// <summary>
+        /// Returns FIRST(X) which is defined as the set of terminals that
+        /// can start a string of symbols derived from X.
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <returns></returns>
+        List<GrammarSymbol> FirstSet(GrammarSymbol symbol);
+
+        /// <summary>
+        /// Returns FOLLOW(X) which is defined as the set of symbols that
+        /// can appear immediately after some string of symbols derived from X.
+        /// </summary>
+        /// <remarks>
+        /// Cannot calculate the FOLLOW set for a Terminal.
+        /// </remarks>
+        /// <param name="nonTerminal"></param>
+        /// <returns></returns>
+        List<GrammarSymbol> FollowSet(GrammarSymbol nonTerminal);
+    }
+
+    public class GrammarOperator : IGrammarOperator
+    {
 
         /// <summary>
         /// Takes a symbol and tells you if the symbol is a Terminal.
@@ -37,18 +86,25 @@ namespace MParse
         /// <exception cref="ArgumentException">
         /// Thrown if the symbol passed is neither a terminal nor a non-terminal.
         /// </exception>
-        public abstract bool IsTerminal(int symbol);
+        //public abstract bool IsTerminal(int symbol);
 
-        private readonly Dictionary<int, List<int>> _firstSetCache;
-        private readonly Dictionary<int, List<int>> _followSetCache;
-        
+        private readonly Dictionary<GrammarSymbol, List<GrammarSymbol>> _firstSetCache;
+        private readonly Dictionary<GrammarSymbol, List<GrammarSymbol>> _followSetCache;
 
-        protected GrammarProvider()
+        private readonly IGrammarProvider _grammarProvider;
+
+        public GrammarOperator(IGrammarProvider grammarProvider)
         {
-            _firstSetCache = new Dictionary<int, List<int>>();
-            _followSetCache = new Dictionary<int, List<int>>();
+            _grammarProvider = grammarProvider;
+            _firstSetCache = new Dictionary<GrammarSymbol, List<GrammarSymbol>>();
+            _followSetCache = new Dictionary<GrammarSymbol, List<GrammarSymbol>>();
         }
 
+        public GrammarOperator() : this(new TestGrammarProvider())
+        {
+            
+        }
+        
 
         /// <summary>
         /// Returns the set of items that can be transitioned to from inputItems
@@ -58,52 +114,11 @@ namespace MParse
         /// <param name="inputItems"></param>
         /// <param name="symbol"></param>
         /// <returns></returns>
-        public virtual List<Item> Goto(IEnumerable<Item> inputItems, int symbol)
+        public virtual List<Item> Goto(IEnumerable<Item> inputItems, GrammarSymbol symbol)
         {
             var items = inputItems.Where(inputItem => inputItem.HasNextToken && inputItem.NextToken == symbol);
             items = items.Select(inputItem => inputItem.AdvanceDot());
             return GetClosure(items);
-        }
-
-        public virtual TransitionTable CreateTransitionTable(List<ParserState> states)
-        {
-            var transitionTable = new TransitionTable(states[0]);
-
-            for (int i = 0; i < states.Count; i++)
-            {
-                DoFunc(transitionTable, states[i]);
-            }
-
-            return transitionTable;
-        }
-
-        private void DoFunc(TransitionTable tt, ParserState state)
-        {
-            var stateActions = new Dictionary<int, TransitionAction>();
-            tt._table.Add(state, stateActions);
-            var symbols = GetGrammarSymbols();
-            foreach (var symbol in symbols)
-            {
-                if (state.StateTransitions.ContainsKey(symbol))
-                {
-                    if (IsTerminal(symbol))
-                    {
-                        stateActions.Add(symbol,
-                                         new TransitionAction(ParserAction.Shift, state.StateTransitions[symbol]));
-                    }
-                }
-            }
-            foreach (var item in state.Items)
-            {
-                if(!item.HasNextToken)
-                {
-                    var followSet = FollowSet(item.ItemProduction.Head);
-                    foreach (var terminal in followSet)
-                    {
-                        stateActions.Add(terminal, new TransitionAction(ParserAction.Reduce, item.ItemProduction));
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -117,9 +132,9 @@ namespace MParse
             //The first state is the closure of the starting symbol.
             var states = new List<ParserState>
                              {
-                                 new ParserState(GetClosure(GetAugmentedState()))
+                                 new ParserState(GetClosure(_grammarProvider.GetAugmentedState()))
                              };
-            var grammarSymbols = GetGrammarSymbols();
+            var grammarSymbols = _grammarProvider.GetGrammarSymbols();
             //iterate through the states list.
             //  this list grows as we iterate
             for (int i = 0; i < states.Count; i++)
@@ -130,10 +145,10 @@ namespace MParse
                     //get the set of items to transition to for this input
                     var gotoForSymbol = Goto(state.Items, grammarSymbol);
                     //if the state exists
-                    if(gotoForSymbol.Count > 0)
+                    if (gotoForSymbol.Count > 0)
                     {
                         ParserState transitionTo;
-                        if(!StateAlreadyExists(states, gotoForSymbol, out transitionTo))
+                        if (!StateAlreadyExists(states, gotoForSymbol, out transitionTo))
                         {
                             //if there is not already a state with this set of items
                             //  then create a new state with that set of items
@@ -150,7 +165,6 @@ namespace MParse
             return states;
         }
 
-
         /// <summary>
         /// If there exists a state in states with the same set of Items as items
         /// then return true and assign state to the reference of the existing state.
@@ -165,7 +179,7 @@ namespace MParse
             foreach (var parserState in states)
             {
                 bool areEqual = items.All(item => parserState.Items.Contains(item)) && parserState.Items.Count() == items.Count();
-                if(areEqual)
+                if (areEqual)
                 {
                     state = parserState;
                     return true;
@@ -177,7 +191,7 @@ namespace MParse
 
         private List<Item> GetClosure(Item item)
         {
-            return GetClosure(new[] {item});
+            return GetClosure(new[] { item });
         }
 
         /// <summary>
@@ -187,7 +201,7 @@ namespace MParse
         /// <returns></returns>
         public virtual List<Item> GetClosure(IEnumerable<Item> items)
         {
-            var productions = GetProductions();
+            var productions = _grammarProvider.GetProductions();
 
             var closure = new List<Item>();
             //the closure contains all of the original items
@@ -218,36 +232,37 @@ namespace MParse
             return closure;
         }
 
+
         /// <summary>
         /// Returns FIRST(X) which is defined as the set of terminals that
         /// can start a string of symbols derived from X.
         /// </summary>
         /// <param name="symbol"></param>
         /// <returns></returns>
-        public virtual List<int> FirstSet(int symbol)
+        public virtual List<GrammarSymbol> FirstSet(GrammarSymbol symbol)
         {
             //have we already calculated the FIRST set of this symbol?
             if (_firstSetCache.ContainsKey(symbol))
                 return _firstSetCache[symbol];
 
             //The FIRST set of a terminal is itself.
-            if (IsTerminal(symbol))
-                return new List<int> {symbol};
+            if (symbol is Terminal)
+                return new List<GrammarSymbol> { symbol };
 
-            var result = new HashSet<int>();
-            var productions = GetProductions();
+            var result = new HashSet<GrammarSymbol>();
+            var productions = _grammarProvider.GetProductions();
 
             //Get the starting symbol of a production where:
             //  The production has a valid tail (doesn't derive to an empty string)
             //  The head of the production is the symbol we are interested in
             //  The production isn't left recursive (so we don't get infinite recursion)
             var productionStartValues =
-                productions.Where(x => x.Length > 0 && x.Head == symbol && x[0] != x.Head)
-                .Select(x => x[0]);
+                productions.Where(prod => prod.Length > 0 && prod.Head == symbol && prod[0] != prod.Head)
+                .Select(prod => prod[0]);
 
             foreach (var value in productionStartValues)
             {
-                if (IsTerminal(value))
+                if (value is Terminal)
                     result.Add(value);
                 else
                     //Recursively get the FIRST set of the non-terminals
@@ -264,32 +279,35 @@ namespace MParse
         /// Returns FOLLOW(X) which is defined as the set of symbols that
         /// can appear immediately after some string of symbols derived from X.
         /// </summary>
+        /// <remarks>
+        /// Cannot calculate the FOLLOW set for a Terminal.
+        /// </remarks>
         /// <param name="nonTerminal"></param>
         /// <returns></returns>
-        public virtual List<int> FollowSet(int nonTerminal)
+        public virtual List<GrammarSymbol> FollowSet(GrammarSymbol nonTerminal)
         {
             if (_followSetCache.ContainsKey(nonTerminal))
                 return _followSetCache[nonTerminal];
 
-            if(IsTerminal(nonTerminal))
+            if (nonTerminal is Terminal)
                 throw new ArgumentException("Cannot calculate the FOLLOW set for a Terminal.", "nonTerminal");
 
-            var result = new HashSet<int>();
-            var productions = GetProductions();
-            
+            var result = new HashSet<GrammarSymbol>();
+            var productions = _grammarProvider.GetProductions();
+
             foreach (var production in productions)
             {
                 for (int i = 0; i < production.Length; i++)
                 {
                     //Find the position of the nonterminal in the production
-                    if(production[i] == nonTerminal)
+                    if (production[i] == nonTerminal)
                     {
                         //If the index of the nonterminal is at the end of the
                         //  production's tail, then we add the FOLLOW set
                         //  of the production's head to the result.
                         //Otherwise, we find the FIRST set of the following 
                         //  element in the production, and add it to the FOLLOW set.
-                        if(i == production.Length - 1)
+                        if (i == production.Length - 1)
                         {
                             result.UnionWith(FollowSet(production.Head));
                         }
@@ -304,70 +322,6 @@ namespace MParse
             _followSetCache.Add(nonTerminal, resultList);
             return resultList;
         }
+        
     }
-
-    public class TransitionTable
-    {
-        public readonly ParserState _startingState;
-
-        public readonly Dictionary<ParserState, Dictionary<int, TransitionAction>> _table;
-
-        public TransitionTable(ParserState startingState)
-        {
-            if(startingState == null)
-                throw new ArgumentNullException("startingState");
-            _startingState = startingState;
-            _table = new Dictionary<ParserState, Dictionary<int, TransitionAction>>();
-        }
-
-    }
-
-    public class TransitionAction
-    {
-        public ParserAction Action { get; private set; }
-        public ParserState NextState { get; private set; }
-        public Production ReduceByProduction { get; private set; }
-
-        public TransitionAction(ParserAction action)
-        {
-            Action = action;
-        }
-
-        public TransitionAction(ParserAction action, ParserState nextState) : this(action)
-        {
-            if(action != ParserAction.Shift)
-                throw new Exception("Can only define the next state for the shift action.");
-            NextState = nextState;
-        }
-
-        public TransitionAction(ParserAction action, Production reduceByProduction) :this(action)
-        {
-            if (action != ParserAction.Reduce)
-                throw new Exception("Can only define the production to reduce by for the reduce action.");
-            ReduceByProduction = reduceByProduction;
-        }
-        public override string ToString()
-        {
-            var result = new StringBuilder();
-            result.AppendLine(Action.ToString());
-            switch (Action)
-            {
-                case ParserAction.Shift:
-                    result.Append(NextState);
-                    break;
-                case ParserAction.Reduce:
-                    result.Append(ReduceByProduction);
-                    break;
-            }
-            return result.ToString();
-        }
-    }
-
-    public enum ParserAction
-    {
-        Shift,
-        Reduce,
-        Accept
-    }
-   
 }

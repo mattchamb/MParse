@@ -66,12 +66,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DummyGrammarProvider.cs" />
+    <Compile Include="TestGrammarProvider.cs" />
     <Compile Include="GrammarProvider.cs" />
+    <Compile Include="GrammarSymbol.cs" />
     <Compile Include="Production.cs" />
     <Compile Include="Item.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ParserState.cs" />
+    <Compile Include="TransitionAction.cs" />
+    <Compile Include="TransitionTable.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
