@@ -3,7 +3,7 @@ using System.Text;
 
 namespace MParse
 {
-    public class Item
+    public class Item : IEquatable<Item>
     {
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace MParse
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return other.CurrentPosition == CurrentPosition && Equals(other.ItemProduction, ItemProduction);
+            return other.CurrentPosition == CurrentPosition && ItemProduction.Equals(other.ItemProduction);
         }
 
         public override int GetHashCode()

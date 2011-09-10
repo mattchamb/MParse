@@ -16,6 +16,7 @@ namespace MParse.Tests
         public void FixtureSetup()
         {
             Grammar = new DummyGrammarProvider();
+            //Grammar = new AnotherDummy();
         }
 
         [Test]
@@ -73,6 +74,7 @@ namespace MParse.Tests
         public void StatesTest()
         {
             var states = Grammar.CreateStates();
+            var transitionTable = Grammar.CreateTransitionTable(states);
         }
     }
 }

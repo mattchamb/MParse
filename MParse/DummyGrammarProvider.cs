@@ -3,6 +3,72 @@ using System.Linq;
 
 namespace MParse
 {
+
+    public class AnotherDummy : GrammarProvider
+    {
+
+        public enum T
+        {
+            S,
+            E,
+            T,
+            F,
+            Plus,
+            Times,
+            Id,
+            Lparen,
+            Rparen
+        }
+        public override Production[] GetProductions()
+        {
+            return new[]
+                       {
+                           new Production((int) T.S, new[] {(int) T.E}),
+                           new Production((int) T.E, new[] {(int) T.E, (int) T.Plus, (int) T.T}),
+                           new Production((int) T.E, new[] {(int) T.T}), 
+                           new Production((int) T.T, new[] {(int) T.T, (int) T.Times, (int) T.F}), 
+                           new Production((int) T.T, new[] {(int) T.F}), 
+                           new Production((int) T.F, new[] {(int) T.Lparen, (int) T.E, (int) T.Rparen}), 
+                           new Production((int) T.F, new[] {(int) T.Id})
+                       };
+        }
+
+        public override int[] GetGrammarSymbols()
+        {
+            return
+                new[]
+                    {
+                        (int) T.S,
+                        (int) T.E,
+                        (int) T.T,
+                        (int) T.F,
+                        (int) T.Plus,
+                        (int) T.Times,
+                        (int) T.Id,
+                        (int) T.Lparen,
+                        (int) T.Rparen,
+                    };
+        }
+
+        public override Item GetAugmentedState()
+        {
+            return new Item(new Production((int) T.S, new[] {(int) T.E}));
+        }
+
+        public override bool IsTerminal(int symbol)
+        {
+            return
+                new[]
+                    {
+                        (int) T.Plus,
+                        (int) T.Times,
+                        (int) T.Id,
+                        (int) T.Lparen,
+                        (int) T.Rparen
+                    }.Any(x => x == symbol);
+        }
+    }
+
     public class DummyGrammarProvider : GrammarProvider
     {
         internal enum Tokens

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace MParse
 {
-    public class Production
+    public class Production : IEquatable<Production>
     {
         public int Head { get; private set; }
         public int[] Tail { get; private set; }
@@ -59,7 +60,7 @@ namespace MParse
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return other.Head == Head && Equals(other.Tail, Tail);
+            return other.Head == Head && Tail.SequenceEqual(other.Tail);
         }
 
         public override int GetHashCode()

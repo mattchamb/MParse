@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace MParse
 {
@@ -62,6 +63,47 @@ namespace MParse
             var items = inputItems.Where(inputItem => inputItem.HasNextToken && inputItem.NextToken == symbol);
             items = items.Select(inputItem => inputItem.AdvanceDot());
             return GetClosure(items);
+        }
+
+        public virtual TransitionTable CreateTransitionTable(List<ParserState> states)
+        {
+            var transitionTable = new TransitionTable(states[0]);
+
+            for (int i = 0; i < states.Count; i++)
+            {
+                DoFunc(transitionTable, states[i]);
+            }
+
+            return transitionTable;
+        }
+
+        private void DoFunc(TransitionTable tt, ParserState state)
+        {
+            var stateActions = new Dictionary<int, TransitionAction>();
+            tt._table.Add(state, stateActions);
+            var symbols = GetGrammarSymbols();
+            foreach (var symbol in symbols)
+            {
+                if (state.StateTransitions.ContainsKey(symbol))
+                {
+                    if (IsTerminal(symbol))
+                    {
+                        stateActions.Add(symbol,
+                                         new TransitionAction(ParserAction.Shift, state.StateTransitions[symbol]));
+                    }
+                }
+            }
+            foreach (var item in state.Items)
+            {
+                if(!item.HasNextToken)
+                {
+                    var followSet = FollowSet(item.ItemProduction.Head);
+                    foreach (var terminal in followSet)
+                    {
+                        stateActions.Add(terminal, new TransitionAction(ParserAction.Reduce, item.ItemProduction));
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -263,4 +305,69 @@ namespace MParse
             return resultList;
         }
     }
+
+    public class TransitionTable
+    {
+        public readonly ParserState _startingState;
+
+        public readonly Dictionary<ParserState, Dictionary<int, TransitionAction>> _table;
+
+        public TransitionTable(ParserState startingState)
+        {
+            if(startingState == null)
+                throw new ArgumentNullException("startingState");
+            _startingState = startingState;
+            _table = new Dictionary<ParserState, Dictionary<int, TransitionAction>>();
+        }
+
+    }
+
+    public class TransitionAction
+    {
+        public ParserAction Action { get; private set; }
+        public ParserState NextState { get; private set; }
+        public Production ReduceByProduction { get; private set; }
+
+        public TransitionAction(ParserAction action)
+        {
+            Action = action;
+        }
+
+        public TransitionAction(ParserAction action, ParserState nextState) : this(action)
+        {
+            if(action != ParserAction.Shift)
+                throw new Exception("Can only define the next state for the shift action.");
+            NextState = nextState;
+        }
+
+        public TransitionAction(ParserAction action, Production reduceByProduction) :this(action)
+        {
+            if (action != ParserAction.Reduce)
+                throw new Exception("Can only define the production to reduce by for the reduce action.");
+            ReduceByProduction = reduceByProduction;
+        }
+        public override string ToString()
+        {
+            var result = new StringBuilder();
+            result.AppendLine(Action.ToString());
+            switch (Action)
+            {
+                case ParserAction.Shift:
+                    result.Append(NextState);
+                    break;
+                case ParserAction.Reduce:
+                    result.Append(ReduceByProduction);
+                    break;
+            }
+            return result.ToString();
+        }
+    }
+
+    public enum ParserAction
+    {
+        Shift,
+        Reduce,
+        Accept
+    }
+   
 }

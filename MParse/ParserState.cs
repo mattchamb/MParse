@@ -1,14 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace MParse
 {
     public class ParserState : IEquatable<ParserState>
     {
+        //TODO: Refactor so this is not stupid.
+        private bool IsTerminal(int token)
+        {
+            return
+                new[]
+                    {
+                        (int) DummyGrammarProvider.Tokens.Plus,
+                        (int) DummyGrammarProvider.Tokens.Times,
+                        (int) DummyGrammarProvider.Tokens.Zero,
+                        (int) DummyGrammarProvider.Tokens.One
+                    }.Any(x => x == token);
+        }
+
         private readonly Dictionary<int, ParserState> _stateTransitions;
         private readonly List<Item> _itemsInState;
 
+        //Describes the transition from this state to another state under the given input symbol.
+        public Dictionary<int, ParserState> StateTransitions { get { return _stateTransitions; } }
         public IEnumerable<Item> Items { get { return _itemsInState; } }
 
         public ParserState(IEnumerable<Item> items)
@@ -26,6 +42,8 @@ namespace MParse
 
         public ParserState AddTransition(int symbol, ParserState transitionTo)
         {
+            if(_stateTransitions.ContainsKey(symbol))
+                throw new Exception("Conflict");
             _stateTransitions[symbol] = transitionTo;
             return transitionTo;
         }
@@ -42,6 +60,7 @@ namespace MParse
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
+            //TODO: Make this not depend on the order of items.
             return _itemsInState.SequenceEqual(other._itemsInState);
         }
 
@@ -51,6 +70,16 @@ namespace MParse
             {
                 return (_stateTransitions.GetHashCode()*397) ^ _itemsInState.GetHashCode();
             }
+        }
+        public override string ToString()
+        {
+            var result = new StringBuilder();
+            foreach (var item in Items)
+            {
+                result.Append(item.ToString());
+                result.AppendLine("||");
+            }
+            return result.ToString();
         }
     }
 }
