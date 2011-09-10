@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 
-namespace MParse.Tests
+namespace MParse.Tests.TestFixtures
 {
 
 }
