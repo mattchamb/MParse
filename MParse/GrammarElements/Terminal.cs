@@ -1,4 +1,4 @@
-﻿namespace MParse
+﻿namespace MParse.GrammarElements
 {
     public class Terminal : GrammarSymbol
     {

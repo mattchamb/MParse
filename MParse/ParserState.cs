@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MParse.GrammarElements;
 
 namespace MParse
 {
@@ -11,8 +12,21 @@ namespace MParse
         private readonly List<Item> _itemsInState;
 
         //Describes the transition from this state to another state under the given input symbol.
-        public Dictionary<GrammarSymbol, ParserState> StateTransitions { get { return _stateTransitions; } }
-        public IEnumerable<Item> Items { get { return _itemsInState; } }
+        public Dictionary<GrammarSymbol, ParserState> StateTransitions
+        {
+            get
+            {
+                return _stateTransitions;
+            }
+        }
+
+        public IEnumerable<Item> Items
+        {
+            get
+            {
+                return _itemsInState;
+            }
+        }
 
         public ParserState(IEnumerable<Item> items)
         {

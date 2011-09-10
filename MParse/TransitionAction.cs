@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text;
+using MParse.GrammarElements;
 
 namespace MParse
 {
-
     public class TransitionAction
     {
         public enum ParserAction

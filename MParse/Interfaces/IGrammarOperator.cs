@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using MParse.GrammarElements;
 
-namespace MParse
+namespace MParse.Interfaces
 {
     public interface IGrammarOperator
     {

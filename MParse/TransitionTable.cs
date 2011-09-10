@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using MParse.GrammarElements;
+using MParse.Interfaces;
 
 namespace MParse
 {

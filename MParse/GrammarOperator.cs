@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MParse.GrammarElements;
+using MParse.Interfaces;
 
 namespace MParse
 {
@@ -17,12 +19,6 @@ namespace MParse
             _firstSetCache = new Dictionary<GrammarSymbol, List<GrammarSymbol>>();
             _followSetCache = new Dictionary<GrammarSymbol, List<GrammarSymbol>>();
         }
-
-        public GrammarOperator() : this(new TestGrammarProvider())
-        {
-            
-        }
-        
 
         /// <summary>
         /// Returns the set of items that can be transitioned to from inputItems

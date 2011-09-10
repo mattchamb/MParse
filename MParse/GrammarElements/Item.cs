@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace MParse
+namespace MParse.GrammarElements
 {
     public class Item : IEquatable<Item>
     {

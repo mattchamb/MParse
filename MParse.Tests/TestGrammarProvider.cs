@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using MParse.GrammarElements;
+using MParse.Interfaces;
 
-namespace MParse
+namespace MParse.Tests
 {
     public class TestGrammarProvider : IGrammarProvider
     {
