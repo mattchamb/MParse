@@ -13,7 +13,8 @@ namespace MParse.GrammarElements
             SymbolId = symbolId;
         }
 
-        protected GrammarSymbol(int symbolId, string symbolName) : this(symbolId)
+        protected GrammarSymbol(int symbolId, string symbolName)
+            : this(symbolId)
         {
             Name = symbolName ?? symbolId.ToString();
         }
@@ -38,12 +39,12 @@ namespace MParse.GrammarElements
 
         public static bool operator ==(GrammarSymbol left, GrammarSymbol right)
         {
-            return Equals(left, right);
+            return left != null && left.Equals(right);
         }
 
         public static bool operator !=(GrammarSymbol left, GrammarSymbol right)
         {
-            return !Equals(left, right);
+            return left != null && !left.Equals(right);
         }
 
         public override string ToString()

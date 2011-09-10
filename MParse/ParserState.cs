@@ -9,7 +9,7 @@ namespace MParse
     public class ParserState : IEquatable<ParserState>
     {
         private readonly Dictionary<GrammarSymbol, ParserState> _stateTransitions;
-        private readonly List<Item> _itemsInState;
+        private readonly HashSet<Item> _itemsInState;
 
         //Describes the transition from this state to another state under the given input symbol.
         public Dictionary<GrammarSymbol, ParserState> StateTransitions
@@ -20,7 +20,7 @@ namespace MParse
             }
         }
 
-        public IEnumerable<Item> Items
+        public HashSet<Item> Items
         {
             get
             {
@@ -31,7 +31,7 @@ namespace MParse
         public ParserState(IEnumerable<Item> items)
         {
             _stateTransitions = new Dictionary<GrammarSymbol, ParserState>();
-            _itemsInState = new List<Item>(items);
+            _itemsInState = new HashSet<Item>(items);
         }
 
         public ParserState AddTransition(GrammarSymbol symbol, List<Item> items)
@@ -43,7 +43,7 @@ namespace MParse
 
         public ParserState AddTransition(GrammarSymbol symbol, ParserState transitionTo)
         {
-            if(_stateTransitions.ContainsKey(symbol))
+            if (_stateTransitions.ContainsKey(symbol))
                 throw new Exception("Conflict");
             _stateTransitions[symbol] = transitionTo;
             return transitionTo;
@@ -53,23 +53,22 @@ namespace MParse
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != typeof (ParserState)) return false;
-            return Equals((ParserState) obj);
+            if (obj.GetType() != typeof(ParserState)) return false;
+            return Equals((ParserState)obj);
         }
 
         public bool Equals(ParserState other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            //TODO: Make this not depend on the order of items.
-            return _itemsInState.SequenceEqual(other._itemsInState);
+            return _itemsInState.SetEquals(other._itemsInState);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                return (_stateTransitions.GetHashCode()*397) ^ _itemsInState.GetHashCode();
+                return (_stateTransitions.GetHashCode() * 397) ^ _itemsInState.GetHashCode();
             }
         }
         public override string ToString()

@@ -21,7 +21,7 @@ namespace MParse
                 ConstructActionsForState(state);
             }
         }
-        
+
 
         private void ConstructActionsForState(ParserState state)
         {

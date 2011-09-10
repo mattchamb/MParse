@@ -15,6 +15,9 @@ namespace MParse
 
         public GrammarOperator(IGrammarProvider grammarProvider)
         {
+            if (grammarProvider == null)
+                throw new ArgumentNullException("grammarProvider");
+
             _grammarProvider = grammarProvider;
             _firstSetCache = new Dictionary<GrammarSymbol, List<GrammarSymbol>>();
             _followSetCache = new Dictionary<GrammarSymbol, List<GrammarSymbol>>();
@@ -30,9 +33,15 @@ namespace MParse
         /// <returns></returns>
         public virtual List<Item> Goto(IEnumerable<Item> inputItems, GrammarSymbol symbol)
         {
+            if (inputItems == null)
+                throw new ArgumentNullException("inputItems");
+            if (symbol == null)
+                throw new ArgumentNullException("symbol");
+
             var items = inputItems.Where(inputItem => inputItem.HasNextToken && inputItem.NextToken == symbol);
             items = items.Select(inputItem => inputItem.AdvanceDot());
             return GetClosure(items);
+
         }
 
         /// <summary>
@@ -92,8 +101,7 @@ namespace MParse
         {
             foreach (var parserState in states)
             {
-                bool areEqual = items.All(item => parserState.Items.Contains(item)) && parserState.Items.Count() == items.Count();
-                if (areEqual)
+                if (parserState.Items.SetEquals(items))
                 {
                     state = parserState;
                     return true;
@@ -155,6 +163,9 @@ namespace MParse
         /// <returns></returns>
         public virtual List<GrammarSymbol> FirstSet(GrammarSymbol symbol)
         {
+            if (symbol == null)
+                throw new ArgumentNullException("symbol");
+
             //have we already calculated the FIRST set of this symbol?
             if (_firstSetCache.ContainsKey(symbol))
                 return _firstSetCache[symbol];
@@ -200,6 +211,10 @@ namespace MParse
         /// <returns></returns>
         public virtual List<GrammarSymbol> FollowSet(GrammarSymbol nonTerminal)
         {
+
+            if (nonTerminal == null)
+                throw new ArgumentNullException("nonTerminal");
+
             if (_followSetCache.ContainsKey(nonTerminal))
                 return _followSetCache[nonTerminal];
 
@@ -236,6 +251,6 @@ namespace MParse
             _followSetCache.Add(nonTerminal, resultList);
             return resultList;
         }
-        
+
     }
 }

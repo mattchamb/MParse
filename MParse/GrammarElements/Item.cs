@@ -11,14 +11,16 @@ namespace MParse.GrammarElements
         /// </summary>
         /// <param name="production"></param>
         /// <returns></returns>
-        public Item(Production production) : this(0, production) {}
+        public Item(Production production) : this(0, production) { }
 
         public Item(int currentPosition, Production production)
         {
-            if(currentPosition < 0)
-            {
+            if (currentPosition < 0)
                 throw new ArgumentException("currentPosition cannot be less than zero.", "currentPosition");
-            }
+            if (currentPosition > production.Length)
+                throw new ArgumentException("Cannot set current position outside of the production tail.", "currentPosition");
+            if (production == null)
+                throw new ArgumentNullException("production");
             CurrentPosition = currentPosition;
             ItemProduction = production;
         }
@@ -48,7 +50,7 @@ namespace MParse.GrammarElements
 
         public Item AdvanceDot()
         {
-            if(!CanAdvanceDot)
+            if (!CanAdvanceDot)
                 throw new InvalidOperationException("Cannot advance the dot any more in this production.");
             return new Item(CurrentPosition + 1, ItemProduction);
         }
@@ -72,7 +74,7 @@ namespace MParse.GrammarElements
         {
             unchecked
             {
-                return (CurrentPosition*397) ^ (ItemProduction != null ? ItemProduction.GetHashCode() : 0);
+                return (CurrentPosition * 397) ^ (ItemProduction != null ? ItemProduction.GetHashCode() : 0);
             }
         }
 
@@ -88,7 +90,7 @@ namespace MParse.GrammarElements
                 result.Append(ItemProduction.Tail[i]);
                 result.Append(" ");
             }
-            if(CurrentPosition >= ItemProduction.Length)
+            if (CurrentPosition >= ItemProduction.Length)
                 result.Append(". ");
             return result.ToString();
         }

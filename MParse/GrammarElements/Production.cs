@@ -14,11 +14,11 @@ namespace MParse.GrammarElements
 
         public Production(GrammarSymbol head, GrammarSymbol[] tail)
         {
-            if(tail == null || tail.Length == 0)
+            if (tail == null || tail.Length == 0)
                 throw new ArgumentException("The tail must be a valid Integer array.", "tail");
 
             var headNonTerminal = head as NonTerminal;
-            if(headNonTerminal == null)
+            if (headNonTerminal == null)
                 throw new ArgumentException("The head must be a non-terminal", "head");
 
             Head = headNonTerminal;
@@ -33,11 +33,11 @@ namespace MParse.GrammarElements
             var result = new List<Item>();
             var currentItem = new Item(this);
 
-            do
+            while (currentItem.CanAdvanceDot)
             {
                 result.Add(currentItem);
                 currentItem = currentItem.AdvanceDot();
-            } while (currentItem.CanAdvanceDot);
+            }
 
             _items = result;
             return result;

@@ -22,17 +22,23 @@ namespace MParse
             Action = action;
         }
 
-        public TransitionAction(ParserAction action, ParserState nextState) : this(action)
+        public TransitionAction(ParserAction action, ParserState nextState)
+            : this(action)
         {
-            if(action != ParserAction.Shift)
+            if (action != ParserAction.Shift)
                 throw new Exception("Can only define the next state for the shift action.");
+            if (nextState == null)
+                throw new ArgumentNullException("nextState");
             NextState = nextState;
         }
 
-        public TransitionAction(ParserAction action, Production reduceByProduction) :this(action)
+        public TransitionAction(ParserAction action, Production reduceByProduction)
+            : this(action)
         {
             if (action != ParserAction.Reduce)
                 throw new Exception("Can only define the production to reduce by for the reduce action.");
+            if (reduceByProduction == null)
+                throw new ArgumentNullException("reduceByProduction");
             ReduceByProduction = reduceByProduction;
         }
         public override string ToString()
