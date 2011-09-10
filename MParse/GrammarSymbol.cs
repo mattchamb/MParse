@@ -51,28 +51,4 @@ namespace MParse
             return Name;
         }
     }
-
-    public class Terminal : GrammarSymbol
-    {
-        public Terminal(int symbolId) : base(symbolId)
-        {
-        }
-
-        public Terminal(int symbolId, string symbolName) 
-            : base(symbolId, symbolName)
-        {
-        }
-    }
-
-    public class NonTerminal : GrammarSymbol
-    {
-        public NonTerminal(int symbolId) : base(symbolId)
-        {
-        }
-        public NonTerminal(int symbolId, string symbolName) 
-            : base(symbolId, symbolName)
-        {
-            
-        }
-    }
 }

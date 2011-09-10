@@ -66,8 +66,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GrammarOperator.cs" />
+    <Compile Include="IGrammarOperator.cs" />
+    <Compile Include="IGrammarProvider.cs" />
+    <Compile Include="NonTerminal.cs" />
+    <Compile Include="Terminal.cs" />
     <Compile Include="TestGrammarProvider.cs" />
-    <Compile Include="GrammarProvider.cs" />
     <Compile Include="GrammarSymbol.cs" />
     <Compile Include="Production.cs" />
     <Compile Include="Item.cs" />
