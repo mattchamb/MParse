@@ -47,9 +47,9 @@
     <Compile Include="TestGrammarProvider.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MParse\MParse.csproj">
+    <ProjectReference Include="..\MParse\MParse.Core.csproj">
       <Project>{974C669C-84DC-480B-969E-D850AA81584B}</Project>
-      <Name>MParse</Name>
+      <Name>MParse.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -11,8 +11,15 @@ namespace MParse
         private readonly IGrammarProvider _grammarProvider;
         private readonly IGrammarOperator _grammarOperator;
 
-        public TransitionTable(IGrammarProvider grammarProvider, IGrammarOperator grammarOperator, List<ParserState> parserStates)
+        public TransitionTable(IGrammarProvider grammarProvider, IGrammarOperator grammarOperator, IEnumerable<ParserState> parserStates)
         {
+            if (grammarProvider == null)
+                throw new ArgumentNullException("grammarProvider");
+            if (grammarOperator == null)
+                throw new ArgumentNullException("grammarOperator");
+            if (parserStates == null)
+                throw new ArgumentNullException("parserStates");
+
             _table = new Dictionary<ParserState, Dictionary<GrammarSymbol, TransitionAction>>();
             _grammarProvider = grammarProvider;
             _grammarOperator = grammarOperator;

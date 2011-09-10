@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MParse", "MParse\MParse.csproj", "{974C669C-84DC-480B-969E-D850AA81584B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MParse.Core", "MParse\MParse.Core.csproj", "{974C669C-84DC-480B-969E-D850AA81584B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MParse.Tests", "MParse.Tests\MParse.Tests.csproj", "{FA85A909-F4D2-4823-B8E4-FAB8ACECB26C}"
 EndProject
