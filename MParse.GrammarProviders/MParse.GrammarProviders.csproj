@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{FA85A909-F4D2-4823-B8E4-FAB8ACECB26C}</ProjectGuid>
+    <ProjectGuid>{92862610-5C17-412A-AC88-62D9A1F902C7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MParse.Tests</RootNamespace>
-    <AssemblyName>MParse.Tests</AssemblyName>
+    <RootNamespace>MParse.GrammarProviders</RootNamespace>
+    <AssemblyName>MParse.GrammarProviders</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,7 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework, Version=2.6.0.11089, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -41,9 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TestFixtures\GrammarProviderTests.cs" />
-    <Compile Include="TestFixtures\ProductionTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestGrammarProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MParse.Core\MParse.Core.csproj">

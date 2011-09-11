@@ -99,9 +99,10 @@ namespace MParse
         /// <returns></returns>
         private bool StateAlreadyExists(IEnumerable<ParserState> states, IEnumerable<Item> items, out ParserState state)
         {
+            var itemsArray = items.ToArray();
             foreach (var parserState in states)
             {
-                if (parserState.Items.SetEquals(items))
+                if (parserState.Items.SetEquals(itemsArray))
                 {
                     state = parserState;
                     return true;

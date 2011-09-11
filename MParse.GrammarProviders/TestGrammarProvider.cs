@@ -3,7 +3,7 @@ using System.Linq;
 using MParse.GrammarElements;
 using MParse.Interfaces;
 
-namespace MParse.Tests
+namespace MParse.GrammarProviders
 {
     public class TestGrammarProvider : IGrammarProvider
     {

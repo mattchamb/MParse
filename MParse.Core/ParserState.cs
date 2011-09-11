@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using MParse.GrammarElements;
 
@@ -8,6 +7,8 @@ namespace MParse
 {
     public class ParserState : IEquatable<ParserState>
     {
+
+        private readonly Guid _stateId;
         private readonly Dictionary<GrammarSymbol, ParserState> _stateTransitions;
         private readonly HashSet<Item> _itemsInState;
 
@@ -32,6 +33,7 @@ namespace MParse
         {
             _stateTransitions = new Dictionary<GrammarSymbol, ParserState>();
             _itemsInState = new HashSet<Item>(items);
+            _stateId = Guid.NewGuid();
         }
 
         public ParserState AddTransition(GrammarSymbol symbol, List<Item> items)
@@ -80,6 +82,14 @@ namespace MParse
                 result.AppendLine("||");
             }
             return result.ToString();
+        }
+
+        public string UniqueName
+        {
+            get
+            {
+                return _stateId.ToString();
+            }
         }
     }
 }

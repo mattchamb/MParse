@@ -39,12 +39,12 @@ namespace MParse.GrammarElements
 
         public static bool operator ==(GrammarSymbol left, GrammarSymbol right)
         {
-            return left != null && left.Equals(right);
+            return !ReferenceEquals(left, null) && left.Equals(right);
         }
 
         public static bool operator !=(GrammarSymbol left, GrammarSymbol right)
         {
-            return left != null && !left.Equals(right);
+            return !ReferenceEquals(left, null) && !left.Equals(right);
         }
 
         public override string ToString()

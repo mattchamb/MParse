@@ -2,18 +2,20 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{FA85A909-F4D2-4823-B8E4-FAB8ACECB26C}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{346E7D89-CBD2-4758-9F94-C0FB1E8907B1}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MParse.Tests</RootNamespace>
-    <AssemblyName>MParse.Tests</AssemblyName>
+    <RootNamespace>MParseFront</RootNamespace>
+    <AssemblyName>MParseFront</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,7 +24,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -31,7 +34,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework, Version=2.6.0.11089, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -41,14 +43,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TestFixtures\GrammarProviderTests.cs" />
-    <Compile Include="TestFixtures\ProductionTests.cs" />
+    <Compile Include="MParseFront.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MParse.Core\MParse.Core.csproj">
       <Project>{974C669C-84DC-480B-969E-D850AA81584B}</Project>
       <Name>MParse.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MParse.GrammarProviders\MParse.GrammarProviders.csproj">
+      <Project>{92862610-5C17-412A-AC88-62D9A1F902C7}</Project>
+      <Name>MParse.GrammarProviders</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MParse.OutputGenerators\MParse.OutputGenerators.csproj">
+      <Project>{4548B59F-C501-4BE6-9CFA-D1B7DFCECBDA}</Project>
+      <Name>MParse.OutputGenerators</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
