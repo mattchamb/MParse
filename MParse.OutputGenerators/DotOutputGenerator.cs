@@ -15,10 +15,13 @@ namespace MParse.OutputProviders
         public void Initialize(string[] commandLineArgs, Dictionary<string, string> settings)
         {
             _settings = settings;
-            _output = Console.OpenStandardOutput();
+            if (_settings.ContainsKey("outFile"))
+                _output = File.OpenWrite(_settings["outFile"]);
+            else
+                _output = Console.OpenStandardOutput();
         }
 
-        public bool GenerateOutput(TransitionTable transitionTable)
+        public bool GenerateOutput(TransitionTable transitionTable, ITokenStream tokenStream)
         {
             var builder = new StringBuilder();
             builder.AppendLine("digraph G {");
@@ -85,6 +88,12 @@ namespace MParse.OutputProviders
                 .Replace('7', 'h')
                 .Replace('8', 'i')
                 .Replace('9', 'j');
+        }
+
+        public void Dispose()
+        {
+            if (_settings.ContainsKey("outFile") && _output != null)
+                _output.Dispose();
         }
     }
 }

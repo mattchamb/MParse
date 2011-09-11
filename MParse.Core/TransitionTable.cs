@@ -32,19 +32,18 @@ namespace MParse
             }
         }
 
-        public TransitionTable(IGrammarProvider grammarProvider, IGrammarOperator grammarOperator, IEnumerable<ParserState> parserStates)
+        public TransitionTable(IGrammarProvider grammarProvider, IGrammarOperator grammarOperator)
         {
             if (grammarProvider == null)
                 throw new ArgumentNullException("grammarProvider");
             if (grammarOperator == null)
                 throw new ArgumentNullException("grammarOperator");
-            if (parserStates == null)
-                throw new ArgumentNullException("parserStates");
 
-            _states = parserStates;
             _table = new Dictionary<ParserState, Dictionary<GrammarSymbol, TransitionAction>>();
             _grammarProvider = grammarProvider;
             _grammarOperator = grammarOperator;
+
+            _states = _grammarOperator.CreateStates();
             ConstructTable();
         }
 

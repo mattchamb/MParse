@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using MParse.GrammarElements;
@@ -10,66 +10,105 @@ namespace MParse.OutputProviders
 {
     public class ExecutionViewer : IOutputGenerator
     {
+
+        private class History
+        {
+            public ParserState BeforeState { get; private set; }
+            public ParserState AfterState { get; private set; }
+            public string NamedState { get; set; }
+            public string Action { get; private set; }
+
+            public History(ParserState beforeState, ParserState afterState, string action)
+            {
+                BeforeState = beforeState;
+                AfterState = afterState;
+                Action = action;
+            }
+            public History(ParserState beforeState, string namedState, string action)
+            {
+                BeforeState = beforeState;
+                NamedState = namedState;
+                Action = action;
+            }
+        }
+
         public void Initialize(string[] commandLineArgs, Dictionary<string, string> settings)
         {
             
         }
 
-        public bool GenerateOutput(TransitionTable transitionTable)
+        public bool GenerateOutput(TransitionTable transitionTable, ITokenStream tokenStream)
         {
-            var input = new GrammarSymbol[]
-                                        {
-                                            new Terminal(6, "Id"),
-                                            new Terminal(5, "*"),
-                                            new Terminal(6, "Id"),
-                                            new Terminal(4, "+"),
-                                            new Terminal(6, "Id"),
-                                            new EndOfStream()
-                                        };
+            if (!tokenStream.MoveNext())
+                throw new ArgumentException("Cannot get state for tokenStream", "tokenStream");
+            var history = new List<History>();
             var stack = new Stack<ParserState>();
-
+            int actionNumber = 0;
             stack.Push(transitionTable.States.First());
-            var index = 0;
-            var current = input[index];
             while(true)
             {
-                current = input[index];
                 var currentState = stack.Peek();
-                Console.WriteLine("---------------");
-                Console.WriteLine("input = " + current);
-                Console.WriteLine("stacksize = " + stack.Count);
-                var action = transitionTable[currentState, current];
+                //Console.WriteLine("---------------");
+                //Console.WriteLine("input = " + tokenStream.Current);
+                //Console.WriteLine("stacksize = " + stack.Count);
+                var action = transitionTable[currentState, tokenStream.Current];
                 if(action.Action == ParserAction.Shift)
                 {
-                    Console.WriteLine("Shift");
+                    //Console.WriteLine("Shift");
+                    history.Add(new History(currentState, action.NextState, string.Format("{0}. In: {1}. Shift", actionNumber++, tokenStream.Current)));
                     stack.Push(action.NextState);
-                    index++;
+                    tokenStream.MoveNext();
                     continue;
                 }
-                else if (action.Action == ParserAction.Reduce)
+                if (action.Action == ParserAction.Reduce)
                 {
-                    Console.WriteLine("Reduce by: " + action.ReduceByProduction);
+                    //Console.WriteLine("Reduce by: " + action.ReduceByProduction);
                     for (int i = 0; i < action.ReduceByProduction.Length; i++)
                     {
                         stack.Pop();
                     }
+                    history.Add(new History(currentState, stack.Peek(), string.Format("{0}. Red. {1}", actionNumber++, action.ReduceByProduction)));
                     currentState = stack.Peek();
                     var nextAction = transitionTable[currentState, action.ReduceByProduction.Head];
-                    Debug.Assert(nextAction.Action == ParserAction.Goto);
                     stack.Push(nextAction.NextState);
+                    history.Add(new History(currentState, stack.Peek(), string.Format("{0}. GOTO", actionNumber++)));
                     continue;
                 }
-                else if (action.Action == ParserAction.Error)
+                if (action.Action == ParserAction.Error)
                 {
-                    Console.WriteLine("Error");
-                    return false;
+                    history.Add(new History(currentState, "Error", string.Format("{0}. In: {1}.", actionNumber++, tokenStream.Current)));
+                    //Console.WriteLine("Error");
+                    break;
                 }
-                else if (action.Action == ParserAction.Accept)
+                if (action.Action == ParserAction.Accept)
                 {
-                    Console.WriteLine("Accept");
-                    return true;
+                    history.Add(new History(currentState, "Accept", string.Format("{0}. In: {1}.", actionNumber++, tokenStream.Current)));
+                    //Console.WriteLine("Accept");
+                    break;
                 }
             }
+            var output = new StringBuilder();
+            var states = history.Select(x => x.AfterState).Union(history.Select(x => x.BeforeState)).Where(x => x != null).ToList();
+            output.AppendLine("digraph G {");
+
+            foreach (var state in states)
+            {
+                output.Append(TidyStateName(state));
+                output.AppendFormat(" [shape=box,label=\"{0}\"]", StateToDotString(state));
+                output.AppendLine(";");
+            }
+
+            foreach (var h in history)
+            {
+                if(h.AfterState != null)
+                    output.AppendFormat("{0} -> {1} [label=\"{2}\"]", TidyStateName(h.BeforeState), TidyStateName(h.AfterState), h.Action);
+                else
+                    output.AppendFormat("{0} -> {1} [label=\"{2}\"]", TidyStateName(h.BeforeState), h.NamedState, h.Action);
+                output.AppendLine();
+            }
+            output.AppendLine("}");
+            File.WriteAllText("history.dot", output.ToString());
+            return true;
         }
 
         private string TidyStateName(ParserState state)
@@ -86,6 +125,22 @@ namespace MParse.OutputProviders
                 .Replace('7', 'h')
                 .Replace('8', 'i')
                 .Replace('9', 'j');
+        }
+
+        private string StateToDotString(ParserState state)
+        {
+            var result = new StringBuilder();
+            foreach (var item in state.Items)
+            {
+                result.Append(item);
+                result.Append("\\l");
+            }
+            return result.ToString();
+        }
+
+        public void Dispose()
+        {
+            
         }
     }
 }

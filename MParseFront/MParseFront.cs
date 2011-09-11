@@ -6,6 +6,7 @@ using MParse;
 using MParse.GrammarProviders;
 using MParse.Interfaces;
 using MParse.OutputProviders;
+using MParse.TokenProviders;
 
 namespace MParseFront
 {
@@ -16,17 +17,24 @@ namespace MParseFront
             IGrammarProvider grammarProvider = new TestGrammarProvider();
             IGrammarOperator grammarOperator = new GrammarOperator(grammarProvider);
             IOutputGenerator dotOutputGenerator = new DotOutputGenerator();
-            IOutputGenerator execViewer = new ExecutionViewer();
+            IOutputGenerator exec = new SimpleExecutor();
+            IOutputGenerator viewer = new ExecutionViewer();
+            ITokenStream tokenStream = new TestTokenStream();
 
-            dotOutputGenerator.Initialize(null, new Dictionary<string, string>{{"outFile", "graph.dot"}});
-            execViewer.Initialize(null, null);
+            dotOutputGenerator.Initialize(args, new Dictionary<string, string>{{"outFile", "graph.dot"}});
+            exec.Initialize(args, null);
+            viewer.Initialize(args, null);
 
-            var states = grammarOperator.CreateStates();
+            var table = new TransitionTable(grammarProvider, grammarOperator);
 
-            var table = new TransitionTable(grammarProvider, grammarOperator, states);
-            //table.Print();
-            //dotOutputGenerator.GenerateOutput(table);
-            execViewer.GenerateOutput(table);
+            //dotOutputGenerator.GenerateOutput(table, tokenStream);
+            viewer.GenerateOutput(table, tokenStream);
+            //tokenStream.Reset();
+            //Console.WriteLine(exec.GenerateOutput(table, tokenStream) ? "Valid" : "Invalid");
+
+            dotOutputGenerator.Dispose();
+            exec.Dispose();
+
             Console.ReadLine();
         }
     }

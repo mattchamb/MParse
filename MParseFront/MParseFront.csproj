@@ -59,6 +59,10 @@
       <Project>{4548B59F-C501-4BE6-9CFA-D1B7DFCECBDA}</Project>
       <Name>MParse.OutputGenerators</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MParse.TokenProviders\MParse.TokenProviders.csproj">
+      <Project>{11FBA1FA-B56E-458A-BF58-2FADC8D25672}</Project>
+      <Name>MParse.TokenProviders</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

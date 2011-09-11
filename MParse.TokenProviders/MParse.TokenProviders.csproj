@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{4548B59F-C501-4BE6-9CFA-D1B7DFCECBDA}</ProjectGuid>
+    <ProjectGuid>{11FBA1FA-B56E-458A-BF58-2FADC8D25672}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MParse.OutputProviders</RootNamespace>
-    <AssemblyName>MParse.OutputProviders</AssemblyName>
+    <RootNamespace>MParse.TokenProviders</RootNamespace>
+    <AssemblyName>MParse.TokenProviders</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -40,10 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DotOutputGenerator.cs" />
-    <Compile Include="ExecutionViewer.cs" />
+    <Compile Include="TestTokenStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SimpleExecutor.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MParse.Core\MParse.Core.csproj">
