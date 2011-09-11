@@ -10,6 +10,7 @@ namespace MParse
         {
             Shift,
             Reduce,
+            Goto,
             Accept
         }
 
@@ -25,8 +26,8 @@ namespace MParse
         public TransitionAction(ParserAction action, ParserState nextState)
             : this(action)
         {
-            if (action != ParserAction.Shift)
-                throw new Exception("Can only define the next state for the shift action.");
+            if (action != ParserAction.Shift && action != ParserAction.Goto)
+                throw new Exception("Can only define the next state for the shift or goto actions.");
             if (nextState == null)
                 throw new ArgumentNullException("nextState");
             NextState = nextState;
@@ -48,6 +49,7 @@ namespace MParse
             switch (Action)
             {
                 case ParserAction.Shift:
+                case ParserAction.Goto:
                     result.Append(NextState);
                     break;
                 case ParserAction.Reduce:

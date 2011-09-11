@@ -40,7 +40,7 @@ namespace MParse.OutputProviders
                 visited[currState.UniqueName] = true;
                 foreach (var stateTransition in currState.StateTransitions)
                 {
-                    output.AppendFormat("{0} -> {1} [label=\"{2}\"];", TidyStateName(currState), TidyStateName(stateTransition.Value),
+                    output.AppendFormat("{0} -> {1} [arrowhead=\"none\",headlabel=\"{2}\"];", TidyStateName(currState), TidyStateName(stateTransition.Value),
                                         stateTransition.Key);
                     output.AppendLine();
                     if (!visited[stateTransition.Value.UniqueName])

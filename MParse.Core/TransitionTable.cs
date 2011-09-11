@@ -19,6 +19,19 @@ namespace MParse
             get { return _states; }
         }
 
+        public TransitionAction this[ParserState state, GrammarSymbol symbol]
+        {
+            get
+            {
+                if(!_table.ContainsKey(state))
+                    throw new InvalidOperationException("The given state is unknown for this transition table.");
+                var tableEntry = _table[state];
+                if (!tableEntry.ContainsKey(symbol))
+                    throw new InvalidOperationException("There is no transition from the given state under the given input.");
+                return tableEntry[symbol];
+            }
+        }
+
         public TransitionTable(IGrammarProvider grammarProvider, IGrammarOperator grammarOperator, IEnumerable<ParserState> parserStates)
         {
             if (grammarProvider == null)
@@ -53,11 +66,16 @@ namespace MParse
                         stateActions.Add(symbol,
                                          new TransitionAction(TransitionAction.ParserAction.Shift, state.StateTransitions[symbol]));
                     }
+                    else
+                    {
+                        stateActions.Add(symbol,
+                                         new TransitionAction(TransitionAction.ParserAction.Goto, state.StateTransitions[symbol]));
+                    }
                 }
             }
             foreach (var item in state.Items)
             {
-                if (!item.HasNextToken)
+                if (item.ItemProduction != _grammarProvider.GetAugmentedState().ItemProduction && !item.HasNextToken)
                 {
                     var followSet = _grammarOperator.FollowSet(item.ItemProduction.Head);
                     foreach (var terminal in followSet)

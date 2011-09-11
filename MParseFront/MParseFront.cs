@@ -15,15 +15,18 @@ namespace MParseFront
         {
             IGrammarProvider grammarProvider = new TestGrammarProvider();
             IGrammarOperator grammarOperator = new GrammarOperator(grammarProvider);
-            IOutputGenerator outputGenerator = new DotOutputGenerator();
+            IOutputGenerator dotOutputGenerator = new DotOutputGenerator();
+            IOutputGenerator execViewer = new ExecutionViewer();
 
-            outputGenerator.Initialize(null, null);
+            dotOutputGenerator.Initialize(null, null);
+            execViewer.Initialize(null, null);
 
             var states = grammarOperator.CreateStates();
 
             var table = new TransitionTable(grammarProvider, grammarOperator, states);
 
-            outputGenerator.GenerateOutput(table);
+            //dotOutputGenerator.GenerateOutput(table);
+            execViewer.GenerateOutput(table);
         }
     }
 }

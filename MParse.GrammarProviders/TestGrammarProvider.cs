@@ -19,7 +19,7 @@ namespace MParse.GrammarProviders
             Lparen,
             Rparen
         }
-
+        
         private readonly Dictionary<T, GrammarSymbol> _symbols;
         private readonly List<Production> _productions;
 
