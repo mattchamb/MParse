@@ -18,7 +18,7 @@ namespace MParse.OutputProviders
             _output = Console.OpenStandardOutput();
         }
 
-        public void GenerateOutput(TransitionTable transitionTable)
+        public bool GenerateOutput(TransitionTable transitionTable)
         {
             var builder = new StringBuilder();
             builder.AppendLine("digraph G {");
@@ -27,6 +27,7 @@ namespace MParse.OutputProviders
             builder.AppendLine("}");
             var outputBytes = Encoding.ASCII.GetBytes(builder.ToString());
             _output.Write(outputBytes, 0, outputBytes.Length);
+            return true;
         }
 
         private void WriteTransitions(StringBuilder output, TransitionTable table)

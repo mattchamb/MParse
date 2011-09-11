@@ -25,7 +25,7 @@ namespace MParse.GrammarElements
             return Equals((GrammarSymbol)obj);
         }
 
-        public bool Equals(GrammarSymbol other)
+        public virtual bool Equals(GrammarSymbol other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;

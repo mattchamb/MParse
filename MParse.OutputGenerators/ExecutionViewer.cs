@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using MParse.GrammarElements;
@@ -14,46 +15,59 @@ namespace MParse.OutputProviders
             
         }
 
-        public void GenerateOutput(TransitionTable transitionTable)
+        public bool GenerateOutput(TransitionTable transitionTable)
         {
-            var input = new[]
-                                              {
-                                                  new Terminal(6, "Id"),
-                                                  new Terminal(5, "*"),
-                                                  new Terminal(6, "Id"),
-                                                  new Terminal(4, "+"),
-                                                  new Terminal(6, "Id")
-                                              };
+            var input = new GrammarSymbol[]
+                                        {
+                                            new Terminal(6, "Id"),
+                                            new Terminal(5, "*"),
+                                            new Terminal(6, "Id"),
+                                            new Terminal(4, "+"),
+                                            new Terminal(6, "Id"),
+                                            new EndOfStream()
+                                        };
             var stack = new Stack<ParserState>();
 
             stack.Push(transitionTable.States.First());
-
-            for (int index = 0; index < input.Length; index++)
+            var index = 0;
+            var current = input[index];
+            while(true)
             {
-                GrammarSymbol symbol = input[index];
+                current = input[index];
                 var currentState = stack.Peek();
                 Console.WriteLine("---------------");
-                Console.WriteLine("input = " + symbol);
+                Console.WriteLine("input = " + current);
                 Console.WriteLine("stacksize = " + stack.Count);
-                var action = transitionTable[currentState, symbol];
-                switch (action.Action)
+                var action = transitionTable[currentState, current];
+                if(action.Action == ParserAction.Shift)
                 {
-                    case TransitionAction.ParserAction.Shift:
-                        stack.Push(action.NextState);
-                        Console.WriteLine("Shift");
-                        break;
-                    case TransitionAction.ParserAction.Reduce:
-                        Console.WriteLine("Reducing by production: " + action.ReduceByProduction);
-                        for (int i = 0; i < action.ReduceByProduction.Length; i++)
-                        {
-                            stack.Pop();
-                        }
-                        currentState = stack.Peek();
-                        stack.Push(transitionTable[currentState, action.ReduceByProduction.Head].NextState);
-                        break;
-                    case TransitionAction.ParserAction.Goto:
-                        stack.Push(action.NextState);
-                        break;
+                    Console.WriteLine("Shift");
+                    stack.Push(action.NextState);
+                    index++;
+                    continue;
+                }
+                else if (action.Action == ParserAction.Reduce)
+                {
+                    Console.WriteLine("Reduce by: " + action.ReduceByProduction);
+                    for (int i = 0; i < action.ReduceByProduction.Length; i++)
+                    {
+                        stack.Pop();
+                    }
+                    currentState = stack.Peek();
+                    var nextAction = transitionTable[currentState, action.ReduceByProduction.Head];
+                    Debug.Assert(nextAction.Action == ParserAction.Goto);
+                    stack.Push(nextAction.NextState);
+                    continue;
+                }
+                else if (action.Action == ParserAction.Error)
+                {
+                    Console.WriteLine("Error");
+                    return false;
+                }
+                else if (action.Action == ParserAction.Accept)
+                {
+                    Console.WriteLine("Accept");
+                    return true;
                 }
             }
         }

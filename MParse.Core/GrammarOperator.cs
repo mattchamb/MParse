@@ -8,7 +8,7 @@ namespace MParse
 {
     public class GrammarOperator : IGrammarOperator
     {
-        private readonly Dictionary<GrammarSymbol, List<GrammarSymbol>> _firstSetCache;
+        private readonly Dictionary<GrammarSymbol, List<Terminal>> _firstSetCache;
         private readonly Dictionary<GrammarSymbol, List<GrammarSymbol>> _followSetCache;
 
         private readonly IGrammarProvider _grammarProvider;
@@ -19,7 +19,7 @@ namespace MParse
                 throw new ArgumentNullException("grammarProvider");
 
             _grammarProvider = grammarProvider;
-            _firstSetCache = new Dictionary<GrammarSymbol, List<GrammarSymbol>>();
+            _firstSetCache = new Dictionary<GrammarSymbol, List<Terminal>>();
             _followSetCache = new Dictionary<GrammarSymbol, List<GrammarSymbol>>();
         }
 
@@ -112,7 +112,7 @@ namespace MParse
             return false;
         }
 
-        private List<Item> GetClosure(Item item)
+        public virtual List<Item> GetClosure(Item item)
         {
             return GetClosure(new[] { item });
         }
@@ -162,7 +162,7 @@ namespace MParse
         /// </summary>
         /// <param name="symbol"></param>
         /// <returns></returns>
-        public virtual List<GrammarSymbol> FirstSet(GrammarSymbol symbol)
+        public virtual List<Terminal> FirstSet(GrammarSymbol symbol)
         {
             if (symbol == null)
                 throw new ArgumentNullException("symbol");
@@ -173,9 +173,9 @@ namespace MParse
 
             //The FIRST set of a terminal is itself.
             if (symbol is Terminal)
-                return new List<GrammarSymbol> { symbol };
+                return new List<Terminal> { symbol as Terminal };
 
-            var result = new HashSet<GrammarSymbol>();
+            var result = new HashSet<Terminal>();
             var productions = _grammarProvider.GetProductions();
 
             //Get the starting symbol of a production where:
@@ -189,7 +189,7 @@ namespace MParse
             foreach (var value in productionStartValues)
             {
                 if (value is Terminal)
-                    result.Add(value);
+                    result.Add(value as Terminal);
                 else
                     //Recursively get the FIRST set of the non-terminals
                     result.UnionWith(FirstSet(value));
@@ -202,7 +202,7 @@ namespace MParse
 
 
         /// <summary>
-        /// Returns FOLLOW(X) which is defined as the set of symbols that
+        /// Returns FOLLOW(X) which is defined as the set of terminals that
         /// can appear immediately after some string of symbols derived from X.
         /// </summary>
         /// <remarks>

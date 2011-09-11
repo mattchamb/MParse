@@ -17,7 +17,8 @@ namespace MParse.GrammarProviders
             Times,
             Id,
             Lparen,
-            Rparen
+            Rparen,
+            EOF
         }
         
         private readonly Dictionary<T, GrammarSymbol> _symbols;
@@ -35,11 +36,12 @@ namespace MParse.GrammarProviders
                                {T.Times,    new Terminal    ((int) T.Times,  T.Times.ToString())},
                                {T.Id,       new Terminal    ((int) T.Id,     T.Id.ToString())},
                                {T.Lparen,   new Terminal    ((int) T.Lparen, T.Lparen.ToString())},
-                               {T.Rparen,   new Terminal    ((int) T.Rparen, T.Rparen.ToString())}
+                               {T.Rparen,   new Terminal    ((int) T.Rparen, T.Rparen.ToString())},
+                               {T.EOF,   new EndOfStream    ()}
                            };
             _productions = new List<Production>
                                {
-                                   new Production(_symbols[T.S], new[] {_symbols[T.E]                                               }),
+                                   new Production(_symbols[T.S], new[] {_symbols[T.E], _symbols[T.EOF]                              }),
                                    new Production(_symbols[T.E], new[] {_symbols[T.E],      _symbols[T.Plus],   _symbols[T.T]       }),
                                    new Production(_symbols[T.E], new[] {_symbols[T.T]                                               }),
                                    new Production(_symbols[T.T], new[] {_symbols[T.T],      _symbols[T.Times],  _symbols[T.F]       }),

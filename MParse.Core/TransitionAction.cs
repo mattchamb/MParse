@@ -6,15 +6,10 @@ namespace MParse
 {
     public class TransitionAction
     {
-        public enum ParserAction
-        {
-            Shift,
-            Reduce,
-            Goto,
-            Accept
-        }
+        
 
         public ParserAction Action { get; private set; }
+
         public ParserState NextState { get; private set; }
         public Production ReduceByProduction { get; private set; }
 

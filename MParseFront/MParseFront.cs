@@ -18,15 +18,16 @@ namespace MParseFront
             IOutputGenerator dotOutputGenerator = new DotOutputGenerator();
             IOutputGenerator execViewer = new ExecutionViewer();
 
-            dotOutputGenerator.Initialize(null, null);
+            dotOutputGenerator.Initialize(null, new Dictionary<string, string>{{"outFile", "graph.dot"}});
             execViewer.Initialize(null, null);
 
             var states = grammarOperator.CreateStates();
 
             var table = new TransitionTable(grammarProvider, grammarOperator, states);
-
+            //table.Print();
             //dotOutputGenerator.GenerateOutput(table);
             execViewer.GenerateOutput(table);
+            Console.ReadLine();
         }
     }
 }

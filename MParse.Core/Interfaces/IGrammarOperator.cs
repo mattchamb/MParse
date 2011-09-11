@@ -31,12 +31,19 @@ namespace MParse.Interfaces
         List<Item> GetClosure(IEnumerable<Item> items);
 
         /// <summary>
+        /// Returns the Closure of the given item.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        List<Item> GetClosure(Item item);
+
+        /// <summary>
         /// Returns FIRST(X) which is defined as the set of terminals that
         /// can start a string of symbols derived from X.
         /// </summary>
         /// <param name="symbol"></param>
         /// <returns></returns>
-        List<GrammarSymbol> FirstSet(GrammarSymbol symbol);
+        List<Terminal> FirstSet(GrammarSymbol symbol);
 
         /// <summary>
         /// Returns FOLLOW(X) which is defined as the set of symbols that
