@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text;
-using MParse.GrammarElements;
+using MParse.Core.GrammarElements;
 
-namespace MParse
+namespace MParse.Core
 {
     public class TransitionAction
     {

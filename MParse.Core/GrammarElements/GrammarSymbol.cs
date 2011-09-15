@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MParse.GrammarElements
+namespace MParse.Core.GrammarElements
 {
     public abstract class GrammarSymbol : IEquatable<GrammarSymbol>
     {

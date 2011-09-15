@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using MParse.GrammarElements;
-using MParse.Interfaces;
+using MParse.Core;
+using MParse.Core.Interfaces;
 
-namespace MParse.OutputProviders
+namespace MParse.OutputGenerators
 {
     public class SimpleExecutor : IOutputGenerator
     {

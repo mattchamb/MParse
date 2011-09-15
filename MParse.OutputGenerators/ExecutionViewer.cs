@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using MParse.GrammarElements;
-using MParse.Interfaces;
+using MParse.Core;
+using MParse.Core.Interfaces;
 
-namespace MParse.OutputProviders
+namespace MParse.OutputGenerators
 {
     public class ExecutionViewer : IOutputGenerator
     {

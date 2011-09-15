@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 
-namespace MParse.GrammarElements
+namespace MParse.Core.GrammarElements
 {
     public class Production : IEquatable<Production>
     {

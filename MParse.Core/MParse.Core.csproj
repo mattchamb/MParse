@@ -8,8 +8,8 @@
     <ProjectGuid>{974C669C-84DC-480B-969E-D850AA81584B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MParse</RootNamespace>
-    <AssemblyName>MParse</AssemblyName>
+    <RootNamespace>MParse.Core</RootNamespace>
+    <AssemblyName>MParse.Core</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <CodeContractsAssemblyMode>1</CodeContractsAssemblyMode>

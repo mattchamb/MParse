@@ -1,4 +1,4 @@
-namespace MParse
+namespace MParse.Core
 {
     public enum ParserAction
     {

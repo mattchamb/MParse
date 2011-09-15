@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MParse;
+using MParse.Core;
+using MParse.Core.Interfaces;
 using MParse.GrammarProviders;
-using MParse.Interfaces;
-using MParse.OutputProviders;
+using MParse.OutputGenerators;
 using MParse.TokenProviders;
 
 namespace MParseFront

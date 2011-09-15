@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MParse.Interfaces
+namespace MParse.Core.Interfaces
 {
     public interface IOutputGenerator : IDisposable
     {

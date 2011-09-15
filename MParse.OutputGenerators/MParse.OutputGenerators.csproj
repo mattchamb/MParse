@@ -8,8 +8,8 @@
     <ProjectGuid>{4548B59F-C501-4BE6-9CFA-D1B7DFCECBDA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MParse.OutputProviders</RootNamespace>
-    <AssemblyName>MParse.OutputProviders</AssemblyName>
+    <RootNamespace>MParse.OutputGenerators</RootNamespace>
+    <AssemblyName>MParse.OutputGenerators</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

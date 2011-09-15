@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace MParse.GrammarElements
+﻿namespace MParse.Core.GrammarElements
 {
     public class EndOfStream : Terminal
     {

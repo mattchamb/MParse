@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MParse.GrammarElements;
+using MParse.Core.GrammarElements;
 
-namespace MParse
+namespace MParse.Core
 {
     public class ParserState : IEquatable<ParserState>
     {
