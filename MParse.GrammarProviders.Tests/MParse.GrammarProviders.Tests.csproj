@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{92862610-5C17-412A-AC88-62D9A1F902C7}</ProjectGuid>
+    <ProjectGuid>{CDEB253B-6160-4B00-8280-93C561D404C1}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MParse.GrammarProviders</RootNamespace>
-    <AssemblyName>MParse.GrammarProviders</AssemblyName>
+    <RootNamespace>MParse.GrammarProviders.Tests</RootNamespace>
+    <AssemblyName>MParse.GrammarProviders.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,6 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="nunit.framework, Version=2.6.0.11089, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -40,26 +41,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="XmlGrammarProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestGrammarProvider.cs" />
-    <Compile Include="TestXmlGrammar.cs">
-      <SubType>code</SubType>
-    </Compile>
-    <Compile Include="XmlGrammarProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MParse.Core\MParse.Core.csproj">
       <Project>{974C669C-84DC-480B-969E-D850AA81584B}</Project>
       <Name>MParse.Core</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="TestXmlGrammar.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="XmlGrammarSchema.xsd">
-      <SubType>Designer</SubType>
-    </None>
+    <ProjectReference Include="..\MParse.GrammarProviders\MParse.GrammarProviders.csproj">
+      <Project>{92862610-5C17-412A-AC88-62D9A1F902C7}</Project>
+      <Name>MParse.GrammarProviders</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

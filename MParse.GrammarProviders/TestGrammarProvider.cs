@@ -51,6 +51,11 @@ namespace MParse.GrammarProviders
                                };
         }
 
+        public void SetInput(string inputData)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public Production[] GetProductions()
         {
             return _productions.ToArray();

@@ -4,6 +4,9 @@ namespace MParse.Core.Interfaces
 {
     public interface IGrammarProvider
     {
+
+        void SetInput(string inputData);
+
         /// <summary>
         /// This function provides the productions that define the grammar.
         /// </summary>
