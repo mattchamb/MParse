@@ -20,26 +20,35 @@ namespace MParse.OutputGenerators
         {
             var tokens = tokenStream.ToList();
 
-            IState s = new StartingState(tokens, transitionTable);
+            State s = new StartingState(tokens, transitionTable);
 
-            Func<IState, IParser<IState>> p = (IState x) => x.ToParser();
+            Func<State, IParser<State>> p = (State x) => x.ToParser();
 
-            Func<IState, IParser<IState>> f = (IState y) =>
-            {
-                if (y is StartingState)
-                {
-                    return (y as StartingState).NextState().ToParser();
-                }
-                if (y is State)
-                {
-                    return (y as State).NextState().ToParser();
-                }
-                return y.ToParser();
-            };
+            Func<State, IParser<State>> f = (State y) => y.NextState().ToParser();
 
             var g = p.Compose(f).Compose(f).Compose(f).Compose(f).Compose(f);
 
             var result = g(s);
+
+            if (!(result.Value is AcceptState))
+            {
+                result = g(result.Value);
+            }
+
+            if (!(result.Value is AcceptState))
+            {
+                result = g(result.Value);
+            }
+
+            if (!(result.Value is AcceptState))
+            {
+                result = g(result.Value);
+            }
+
+            if (!(result.Value is AcceptState))
+            {
+                result = g(result.Value);
+            }
 
             if (!(result.Value is AcceptState))
             {
@@ -60,96 +69,56 @@ namespace MParse.OutputGenerators
         }
     }
 
-    public interface IState { }
-
-    public class ErrorState : IState
+    public abstract class State
     {
-        public int ErrorPosition { get; private set; }
-        public ErrorState(int errorPosition)
+        protected Stack<ParserState> _stateStack;
+        protected int _currentTokenPosition;
+        protected IList<Terminal> _tokenStream;
+        protected TransitionTable _transitionTable;
+
+        public State()
         {
-            ErrorPosition = errorPosition;
+
         }
-    }
-
-    public class AcceptState : IState
-    {
-
-    }
-
-    public class StartingState : IState
-    {
-        private Stack<ParserState> _stateStack;
-        private int _currentTokenPosition;
-        private IList<Terminal> _tokenStream;
-        private TransitionTable _transitionTable;
-
-        public StartingState(IList<Terminal> tokenStream, TransitionTable transitionTable)
-        {
-            _stateStack = new Stack<ParserState>();
-            _stateStack.Push(transitionTable.States.First());
-            _currentTokenPosition = 0;
-            _tokenStream = tokenStream;
-            _transitionTable = transitionTable;
-        }
-
-        public IState NextState()
-        {
-            return new State(_tokenStream, _transitionTable, new Stack<ParserState>(_stateStack));
-        }
-    }
-
-    public class State : IState
-    {
-        private Stack<ParserState> _stateStack;
-        private int _currentTokenPosition;
-        private IList<Terminal> _tokenStream;
-        private TransitionTable _transitionTable;
 
         public State(IList<Terminal> tokenStream, TransitionTable transitionTable, Stack<ParserState> stateStack)
         {
-            _stateStack = stateStack;
+            _stateStack = new Stack<ParserState>(stateStack.Reverse());
             _currentTokenPosition = 0;
             _tokenStream = tokenStream;
             _transitionTable = transitionTable;
         }
 
-        private State(State s)
-	    {
+        public State(IList<Terminal> tokenStream, TransitionTable transitionTable) 
+            : this(tokenStream, transitionTable, new Stack<ParserState>())
+        {
+        }
+
+        protected State(State s)
+        {
             _stateStack = new Stack<ParserState>(s._stateStack.Reverse());
             _currentTokenPosition = s._currentTokenPosition;
             _tokenStream = s._tokenStream;
             _transitionTable = s._transitionTable;
-	    }
-
-        private State Clone()
-        {
-            return new State(this);
         }
 
-        public IState NextState()
+        protected virtual State Clone()
         {
-
+            return this;
+        }
+        
+        public virtual State NextState()
+        {
             var currentState = _stateStack.Peek();
             var action = _transitionTable[currentState, _tokenStream[_currentTokenPosition]];
-            
+
             if (action.Action == ParserAction.Shift)
             {
-                var nextState = Clone();
-                nextState._stateStack.Push(action.NextState);
-                nextState._currentTokenPosition++;
-                return nextState;
+                return new ShiftState(this, action.NextState);
             }
             if (action.Action == ParserAction.Reduce)
             {
-                var nextState = Clone();
-                for (int i = 0; i < action.ReduceByProduction.Length; i++)
-                {
-                    nextState._stateStack.Pop();
-                }
-                currentState = nextState._stateStack.Peek();
-                var nextAction = nextState._transitionTable[currentState, action.ReduceByProduction.Head];
-                nextState._stateStack.Push(nextAction.NextState);
-                return nextState;
+                return new ReduceState(this, action.ReduceByProduction);
             }
             if (action.Action == ParserAction.Error)
             {
@@ -163,20 +132,107 @@ namespace MParse.OutputGenerators
         }
     }
 
+    public class ErrorState : State
+    {
+        public int ErrorPosition { get; private set; }
+
+        public ErrorState(int errorPosition)
+        {
+            ErrorPosition = errorPosition;
+        }
+
+        public override State NextState()
+        {
+            return this;
+        }
+    }
+
+    public class AcceptState : State
+    {
+        public override State NextState()
+        {
+            return this;
+        }
+    }
+
+    public class StartingState : State
+    {
+
+        public StartingState(IList<Terminal> tokenStream, TransitionTable transitionTable) : base(tokenStream, transitionTable)
+        {
+            _stateStack.Push(transitionTable.States.First());
+        }
+
+        public StartingState(State s) : base(s)
+        {
+
+        }
+
+        public override State NextState()
+        {
+            return new ShiftState(this);
+        }
+    }
+
+    public class GotoState : State
+    {
+        public GotoState(State s, Production reduceByProduction)
+            : base(s)
+        {
+            var currentState = _stateStack.Peek();
+            var nextAction = _transitionTable[currentState, reduceByProduction.Head];
+            _stateStack.Push(nextAction.NextState);
+        }
+    }
+
+    public class ShiftState : State
+    {
+        public ShiftState(State s) : base(s)
+        {
+
+        }
+
+        public ShiftState(State s, ParserState nextState)
+            : base(s)
+        {
+            _currentTokenPosition++;
+            _stateStack.Push(nextState);
+        }
+    }
+
+    public class ReduceState : State
+    {
+        private Production _reduceByProduction;
+        public ReduceState(State s, Production reduceByProduction)
+            : base(s)
+        {
+            _reduceByProduction = reduceByProduction;
+
+            for (int i = 0; i < reduceByProduction.Length; i++)
+            {
+                _stateStack.Pop();
+            }
+        }
+
+        public override State NextState()
+        {
+            return new GotoState(this, _reduceByProduction);
+        }
+    }
+
     public interface IParser <TState>
     {
         TState Value { get; set; }
     }
 
-    public class Parser<TState> : IParser<TState>
+    public class Parser<TState> : IParser<TState> where TState : State
     {
         public TState Value { get; set; }
     }
 
-   
     public static class MyClass
     {
-        public static IParser<T> ToParser<T>(this T value)
+        public static IParser<T> ToParser<T>(this T value) where T : State
         {
             return new Parser<T>() { Value = value };
         }
