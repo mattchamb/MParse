@@ -46,8 +46,7 @@ namespace MParse.GrammarProviders
 
         private void ParseInputData()
         {
-            var xs = new XmlSerializer(typeof(XmlGrammar));
-            var grammarData = (XmlGrammar)xs.Deserialize(XElement.Parse(_input).CreateReader());
+            
         }
 
        

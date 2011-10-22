@@ -42,9 +42,6 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestGrammarProvider.cs" />
-    <Compile Include="TestXmlGrammar.cs">
-      <SubType>code</SubType>
-    </Compile>
     <Compile Include="XmlGrammarProvider.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -55,11 +52,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="TestXmlGrammar.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="XmlGrammarSchema.xsd">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
