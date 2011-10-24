@@ -19,45 +19,52 @@ namespace MParse.OutputGenerators
         public bool GenerateOutput(TransitionTable transitionTable, ITokenStream tokenStream)
         {
             var tokens = tokenStream.ToList();
+            
 
-            State s = new StartingState(tokens, transitionTable);
+            IParser<State> startingParserState = new StartingState(tokens, transitionTable).ToParser<State>();
+            
+            Func<State, IParser<State>> g = (State y) => y.NextState().ToParser();
 
-            Func<State, IParser<State>> p = (State x) => x.ToParser();
+            g = g.Compose(g);
+            g = g.Compose(g);
+            g = g.Compose(g);
+            g = g.Compose(g);
+            g = g.Compose(g);
+            g = g.Compose(g);
+            g = g.Compose(g);
 
-            Func<State, IParser<State>> f = (State y) => y.NextState().ToParser();
 
-            var g = p.Compose(f).Compose(f).Compose(f).Compose(f).Compose(f);
-
-            var result = g(s);
+            var result = startingParserState.Bind(g);
+            
 
             if (!(result.Value is AcceptState))
             {
-                result = g(result.Value);
+                result = result.Bind(g);
             }
 
             if (!(result.Value is AcceptState))
             {
-                result = g(result.Value);
+                result = result.Bind(g);
             }
 
             if (!(result.Value is AcceptState))
             {
-                result = g(result.Value);
+                result = result.Bind(g);
             }
 
             if (!(result.Value is AcceptState))
             {
-                result = g(result.Value);
+                result = result.Bind(g);
             }
 
             if (!(result.Value is AcceptState))
             {
-                result = g(result.Value);
+                result = result.Bind(g);
             }
 
             if (!(result.Value is AcceptState))
             {
-                result = g(result.Value);
+                result = result.Bind(g);
             }
 
             return true;
@@ -111,24 +118,27 @@ namespace MParse.OutputGenerators
         {
             var currentState = _stateStack.Peek();
             var action = _transitionTable[currentState, _tokenStream[_currentTokenPosition]];
+            State result;
+            switch(action.Action)
+            {
+                case ParserAction.Shift:
+                    result = new ShiftState(this, action.NextState);
+                    break;
 
-            if (action.Action == ParserAction.Shift)
-            {
-                return new ShiftState(this, action.NextState);
+                case ParserAction.Reduce:
+                    result = new ReduceState(this, action.ReduceByProduction);
+                    break;
+
+                case ParserAction.Accept:
+                    result = new AcceptState();
+                    break;
+
+                case ParserAction.Error:
+                default:
+                    result = new ErrorState(_currentTokenPosition);
+                    break;
             }
-            if (action.Action == ParserAction.Reduce)
-            {
-                return new ReduceState(this, action.ReduceByProduction);
-            }
-            if (action.Action == ParserAction.Error)
-            {
-                return new ErrorState(_currentTokenPosition);
-            }
-            if (action.Action == ParserAction.Accept)
-            {
-                return new AcceptState();
-            }
-            return new ErrorState(_currentTokenPosition);
+            return result;
         }
     }
 
