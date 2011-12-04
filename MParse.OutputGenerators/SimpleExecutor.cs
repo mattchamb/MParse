@@ -21,9 +21,7 @@ namespace MParse.OutputGenerators
                 if (action.Action == ParserAction.Shift)
                 {
                     stateStack.Push(action.NextState);
-                    bool b = tokenStream.MoveNext();
-                    if(!b)
-                        throw null;
+                    tokenStream.MoveNext();
                     continue;
                 }
                 if (action.Action == ParserAction.Reduce)

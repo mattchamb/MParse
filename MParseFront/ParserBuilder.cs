@@ -331,6 +331,7 @@ namespace MParseFront
             var parseStack = new CodeArgumentReferenceExpression("parseStack");
 
             result.Statements.Add(new CodeVariableDeclarationStatement(new CodeTypeReference(typeof(int)), "currentState", new CodeMethodInvokeExpression(states, "Peek")));
+            
             foreach (var state in table.States)
             {
                 var ifState = new CodeConditionStatement(new CodeBinaryOperatorExpression(new CodeVariableReferenceExpression("currentState"), CodeBinaryOperatorType.ValueEquality, new CodePrimitiveExpression(state.StateId)));
@@ -352,6 +353,7 @@ namespace MParseFront
                 }
                 if (action.Action == ParserAction.Accept)
                 {
+                    //ifState.TrueStatements.Add(new CodeMethodInvokeExpression(parseStack, "Push", new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(GetClassName(_productions.First())), "ReduceBy"), parseStack)));
                     ifState.TrueStatements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression("ActionResult"), "Accept")));
                 }
                 if (action.Action == ParserAction.Error)

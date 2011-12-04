@@ -33,20 +33,8 @@ namespace MParseFront
 
             exec.GenerateOutput(table, tokenStream);
             //viewer.GenerateOutput(table, tokenStream);
-            Parser p = new Parser();
-            List<_Terminal> ts = new List<_Terminal>
-            {
-                new Id("x"), new Times("*"), new Id("y")
-            };
 
-            var res = p.Parse(ts);
-            
-
-            
-
-            //CreateClasses(grammar.Productions, grammar.Symbols, table);
-
-            
+            CreateClasses(grammar.Productions, grammar.Symbols, table);
 
             //dotOutputGenerator.GenerateOutput(table, tokenStream);
             //viewer.GenerateOutput(table, tokenStream);
@@ -60,8 +48,8 @@ namespace MParseFront
         private static ParserBuilder CreateClasses(IEnumerable<Production> productions, IEnumerable<GrammarSymbol> symbols, TransitionTable tt)
         {
             var parserBuilder = new ParserBuilder("TestNamespace", productions, symbols, tt);
-            
-            File.WriteAllText("out.cs", parserBuilder.GetCode(new CSharpCodeProvider(), new CodeGeneratorOptions()));
+            var s = parserBuilder.GetCode(new CSharpCodeProvider(), new CodeGeneratorOptions());
+            File.WriteAllText("out.cs", s);
 
             return parserBuilder;
         }
