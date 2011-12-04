@@ -9,14 +9,15 @@ namespace MParse.Core.GrammarElements
     {
         public NonTerminal Head { get; private set; }
         public GrammarSymbol[] Tail { get; private set; }
+        public int ProductionId { get; private set; }
 
         private List<Item> _items;
 
-        public Production(GrammarSymbol head, GrammarSymbol[] tail)
+        public Production(int productionId, GrammarSymbol head, GrammarSymbol[] tail)
         {
             if (tail == null || tail.Length == 0)
                 throw new ArgumentException("The tail must be a valid Integer array.", "tail");
-
+            ProductionId = productionId;
             var headNonTerminal = head as NonTerminal;
             if (headNonTerminal == null)
                 throw new ArgumentException("The head must be a non-terminal", "head");

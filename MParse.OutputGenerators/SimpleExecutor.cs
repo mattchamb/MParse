@@ -8,16 +8,10 @@ namespace MParse.OutputGenerators
 {
     public class SimpleExecutor : IOutputGenerator
     {
-        public void Initialize(string[] commandLineArgs, Dictionary<string, string> settings)
-        {
-            
-        }
-
         public bool GenerateOutput(TransitionTable transitionTable, ITokenStream tokenStream)
         {
             if (!tokenStream.MoveNext())
                 throw new ArgumentException("Cannot get state for tokenStream", "tokenStream");
-
             var stateStack = new Stack<ParserState>();
             stateStack.Push(transitionTable.States.First());
             while (true)
@@ -27,7 +21,9 @@ namespace MParse.OutputGenerators
                 if (action.Action == ParserAction.Shift)
                 {
                     stateStack.Push(action.NextState);
-                    tokenStream.MoveNext();
+                    bool b = tokenStream.MoveNext();
+                    if(!b)
+                        throw null;
                     continue;
                 }
                 if (action.Action == ParserAction.Reduce)
@@ -50,11 +46,6 @@ namespace MParse.OutputGenerators
                     return true;
                 }
             }
-        }
-
-        public void Dispose()
-        {
-            
         }
     }
 }

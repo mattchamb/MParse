@@ -2,6 +2,7 @@
 using System.Linq;
 using MParse.Core.GrammarElements;
 using MParse.Core.Interfaces;
+using MParse.Core;
 
 namespace MParse.GrammarProviders
 {
@@ -41,34 +42,34 @@ namespace MParse.GrammarProviders
                            };
             _productions = new List<Production>
                                {
-                                   new Production(_symbols[T.S], new[] {_symbols[T.E], _symbols[T.EOF]                              }),
-                                   new Production(_symbols[T.E], new[] {_symbols[T.E],      _symbols[T.Plus],   _symbols[T.T]       }),
-                                   new Production(_symbols[T.E], new[] {_symbols[T.T]                                               }),
-                                   new Production(_symbols[T.T], new[] {_symbols[T.T],      _symbols[T.Times],  _symbols[T.F]       }),
-                                   new Production(_symbols[T.T], new[] {_symbols[T.F]                                               }),
-                                   new Production(_symbols[T.F], new[] {_symbols[T.Lparen], _symbols[T.E],      _symbols[T.Rparen]  }),
-                                   new Production(_symbols[T.F], new[] {_symbols[T.Id]                                              })
+                                   new Production(0, _symbols[T.S], new[] {_symbols[T.E], _symbols[T.EOF]                              }),
+                                   new Production(1, _symbols[T.E], new[] {_symbols[T.E],      _symbols[T.Plus],   _symbols[T.T]       }),
+                                   new Production(2, _symbols[T.E], new[] {_symbols[T.T]                                               }),
+                                   new Production(3, _symbols[T.T], new[] {_symbols[T.T],      _symbols[T.Times],  _symbols[T.F]       }),
+                                   new Production(4, _symbols[T.T], new[] {_symbols[T.F]                                               }),
+                                   new Production(5, _symbols[T.F], new[] {_symbols[T.Lparen], _symbols[T.E],      _symbols[T.Rparen]  }),
+                                   new Production(6, _symbols[T.F], new[] {_symbols[T.Id]                                              })
                                };
         }
 
-        public void SetInput(string inputData)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public Production[] GetProductions()
+        private Production[] GetProductions()
         {
             return _productions.ToArray();
         }
 
-        public GrammarSymbol[] GetGrammarSymbols()
+        private GrammarSymbol[] GetGrammarSymbols()
         {
             return _symbols.Select(x => x.Value).ToArray();
         }
 
-        public Item GetAugmentedState()
+        private Item GetAugmentedState()
         {
             return new Item(_productions[0]);
+        }
+
+        public Grammar GetGrammar()
+        {
+            return new Grammar(GetProductions(), GetGrammarSymbols(), GetAugmentedState());
         }
     }
 }

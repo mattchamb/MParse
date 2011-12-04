@@ -10,17 +10,10 @@ namespace MParse.OutputGenerators
 {
     public class ParserMonad : IOutputGenerator
     {
-
-        public void Initialize(string[] commandLineArgs, Dictionary<string, string> settings)
-        {
-           
-        }
-
         public bool GenerateOutput(TransitionTable transitionTable, ITokenStream tokenStream)
         {
             var tokens = tokenStream.ToList();
             
-
             IParser<State> startingParserState = new StartingState(tokens, transitionTable).ToParser<State>();
             
             Func<State, IParser<State>> g = (State y) => y.NextState().ToParser();
@@ -36,7 +29,6 @@ namespace MParse.OutputGenerators
 
             var result = startingParserState.Bind(g);
             
-
             if (!(result.Value is AcceptState))
             {
                 result = result.Bind(g);
@@ -66,13 +58,7 @@ namespace MParse.OutputGenerators
             {
                 result = result.Bind(g);
             }
-
             return true;
-        }
-
-        public void Dispose()
-        {
-           
         }
     }
 

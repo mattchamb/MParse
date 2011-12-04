@@ -6,8 +6,6 @@ namespace MParse.Core
 {
     public class TransitionAction
     {
-        
-
         public ParserAction Action { get; private set; }
 
         public ParserState NextState { get; private set; }
@@ -37,6 +35,7 @@ namespace MParse.Core
                 throw new ArgumentNullException("reduceByProduction");
             ReduceByProduction = reduceByProduction;
         }
+
         public override string ToString()
         {
             var result = new StringBuilder();

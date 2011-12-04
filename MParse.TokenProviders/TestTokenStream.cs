@@ -14,8 +14,6 @@ namespace MParse.TokenProviders
                                                         new Terminal(6, "Id"),
                                                         new Terminal(5, "*"),
                                                         new Terminal(6, "Id"),
-                                                        new Terminal(4, "+"),
-                                                        new Terminal(6, "Id"),
                                                         new EndOfStream()
                                                     };
 

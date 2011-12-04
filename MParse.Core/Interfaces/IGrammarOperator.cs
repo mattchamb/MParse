@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using MParse.Core.GrammarElements;
+using System;
 
 namespace MParse.Core.Interfaces
 {
@@ -13,29 +14,29 @@ namespace MParse.Core.Interfaces
         /// <param name="inputItems"></param>
         /// <param name="symbol"></param>
         /// <returns></returns>
-        List<Item> Goto(IEnumerable<Item> inputItems, GrammarSymbol symbol);
+        IList<Item> Goto(IEnumerable<Item> inputItems, GrammarSymbol symbol);
 
         /// <summary>
-        /// Create the list of states, which internally contain the transitions
-        /// out of that state based upon symbol inputs.
+        /// Create a tuple of the states, and a map of the transitions
+        /// out of each state based upon symbol inputs.
         /// Refer Dragon Book pg 246
         /// </summary>
         /// <returns></returns>
-        List<ParserState> CreateStates();
+        Tuple<IList<ParserState>, StateTransitionMap> CreateStates();
 
         /// <summary>
         /// Returns the Closure of the set of items passed to this function.
         /// </summary>
         /// <param name="items"></param>
         /// <returns></returns>
-        List<Item> GetClosure(IEnumerable<Item> items);
+        IList<Item> GetClosure(IEnumerable<Item> items);
 
         /// <summary>
         /// Returns the Closure of the given item.
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        List<Item> GetClosure(Item item);
+        IList<Item> GetClosure(Item item);
 
         /// <summary>
         /// Returns FIRST(X) which is defined as the set of terminals that
@@ -43,7 +44,7 @@ namespace MParse.Core.Interfaces
         /// </summary>
         /// <param name="symbol"></param>
         /// <returns></returns>
-        List<Terminal> FirstSet(GrammarSymbol symbol);
+        IList<Terminal> FirstSet(GrammarSymbol symbol);
 
         /// <summary>
         /// Returns FOLLOW(X) which is defined as the set of symbols that
@@ -54,6 +55,6 @@ namespace MParse.Core.Interfaces
         /// </remarks>
         /// <param name="nonTerminal"></param>
         /// <returns></returns>
-        List<GrammarSymbol> FollowSet(GrammarSymbol nonTerminal);
+        IList<GrammarSymbol> FollowSet(GrammarSymbol nonTerminal);
     }
 }

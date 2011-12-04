@@ -10,13 +10,19 @@ namespace MParse.Core
     public class TransitionTable
     {
         private readonly Dictionary<ParserState, Dictionary<GrammarSymbol, TransitionAction>> _table;
-        private readonly IEnumerable<ParserState> _states; 
-        private readonly IGrammarProvider _grammarProvider;
+        private readonly IEnumerable<ParserState> _states;
+        private readonly StateTransitionMap _stateMap;
+        private readonly Grammar _grammar;
         private readonly IGrammarOperator _grammarOperator;
 
         public IEnumerable<ParserState> States
         {
             get { return _states; }
+        }
+
+        public StateTransitionMap StateMap
+        {
+            get { return _stateMap; }
         }
 
         public TransitionAction this[ParserState state, GrammarSymbol symbol]
@@ -32,18 +38,19 @@ namespace MParse.Core
             }
         }
 
-        public TransitionTable(IGrammarProvider grammarProvider, IGrammarOperator grammarOperator)
+        public TransitionTable(Grammar grammar, IGrammarOperator grammarOperator)
         {
-            if (grammarProvider == null)
-                throw new ArgumentNullException("grammarProvider");
+            if (grammar == null)
+                throw new ArgumentNullException("grammar");
             if (grammarOperator == null)
                 throw new ArgumentNullException("grammarOperator");
 
             _table = new Dictionary<ParserState, Dictionary<GrammarSymbol, TransitionAction>>();
-            _grammarProvider = grammarProvider;
+            _grammar = grammar;
             _grammarOperator = grammarOperator;
-
-            _states = _grammarOperator.CreateStates();
+            var stateTuple = _grammarOperator.CreateStates();
+            _states = stateTuple.Item1;
+            _stateMap = stateTuple.Item2;
             ConstructTable();
         }
 
@@ -57,7 +64,7 @@ namespace MParse.Core
                 {
                     if(item.HasNextToken && item.NextToken is Terminal)
                     {
-                        dict.Add(item.NextToken, new TransitionAction(ParserAction.Shift, state.StateTransitions[item.NextToken]));
+                        dict.Add(item.NextToken, new TransitionAction(ParserAction.Shift, _stateMap[state, item.NextToken]));
                     }
                     if (!item.HasNextToken)
                     {
@@ -68,54 +75,18 @@ namespace MParse.Core
                         }
                     }
                 }
-                if (state.Items.Contains(_grammarProvider.GetAugmentedState().AdvanceDot()))
+                if (state.Items.Contains(_grammar.AugmentedState.AdvanceDot()))
                 {
                     dict[new EndOfStream()] = new TransitionAction(ParserAction.Accept);
                 }
-                var symbols = _grammarProvider.GetGrammarSymbols();
+                var symbols = _grammar.Symbols;
                 foreach (var symbol in symbols)
                 {
-                    if (symbol is NonTerminal && state.StateTransitions.ContainsKey(symbol))
-                        dict.Add(symbol, new TransitionAction(ParserAction.Goto, state.StateTransitions[symbol]));
+                    if (symbol is NonTerminal && _stateMap.TransitionExists(state, symbol))
+                        dict.Add(symbol, new TransitionAction(ParserAction.Goto, _stateMap[state, symbol]));
                     else if(!dict.ContainsKey(symbol))
                         dict.Add(symbol, new TransitionAction(ParserAction.Error));
                 }
-            }
-        }
-
-        //This has pretty crappy output, but it helps to debug.
-        public void Print()
-        {
-            foreach (var val in _table)
-            {
-                Console.Write(val.Key.UniqueName.Substring(0, 4).PadRight(5));
-                foreach (var value in val.Value.OrderBy(x => x.ToString()))
-                {
-                    var output = new StringBuilder();
-                    output.Append(value.Key.ToString());
-                    output.Append(": ");
-                    switch (value.Value.Action)
-                    {
-                        case ParserAction.Accept:
-                            output.AppendFormat("{0}", "ac");
-                            break;
-                        case ParserAction.Error:
-                            output.AppendFormat("{0}", "er");
-                            break;
-                        case ParserAction.Goto:
-                            output.AppendFormat("go {0}", value.Value.NextState.UniqueName.Substring(0, 4));
-                            break;
-                        case ParserAction.Reduce:
-                            output.AppendFormat("re {0}", value.Value.ReduceByProduction);
-                            break;
-                        case ParserAction.Shift:
-                            output.AppendFormat("sh {0}", value.Value.NextState.UniqueName.Substring(0, 4));
-                            break;
-                    }
-                    
-                    Console.Write(output.ToString().PadRight(50));
-                }
-                Console.WriteLine();
             }
         }
     }

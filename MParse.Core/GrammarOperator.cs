@@ -11,27 +11,27 @@ namespace MParse.Core
         private readonly Dictionary<GrammarSymbol, List<Terminal>> _firstSetCache;
         private readonly Dictionary<GrammarSymbol, List<GrammarSymbol>> _followSetCache;
 
-        private readonly IGrammarProvider _grammarProvider;
+        private readonly Grammar _grammar;
 
-        public GrammarOperator(IGrammarProvider grammarProvider)
+        public GrammarOperator(Grammar grammar)
         {
-            if (grammarProvider == null)
-                throw new ArgumentNullException("grammarProvider");
+            if (grammar == null)
+                throw new ArgumentNullException("grammar");
 
-            _grammarProvider = grammarProvider;
+            _grammar = grammar;
             _firstSetCache = new Dictionary<GrammarSymbol, List<Terminal>>();
             _followSetCache = new Dictionary<GrammarSymbol, List<GrammarSymbol>>();
         }
 
         /// <summary>
         /// Returns the set of items that can be transitioned to from inputItems
-        /// under input "symbol".
+        /// under input <paramref name="symbol"/>.
         /// Refer Dragon Book pg 246
         /// </summary>
         /// <param name="inputItems"></param>
         /// <param name="symbol"></param>
         /// <returns></returns>
-        public virtual List<Item> Goto(IEnumerable<Item> inputItems, GrammarSymbol symbol)
+        public IList<Item> Goto(IEnumerable<Item> inputItems, GrammarSymbol symbol)
         {
             if (inputItems == null)
                 throw new ArgumentNullException("inputItems");
@@ -45,19 +45,21 @@ namespace MParse.Core
         }
 
         /// <summary>
-        /// Create the list of states, which internally contain the transitions
-        /// out of that state based upon symbol inputs.
+        /// Create a tuple of the states, and a map of the transitions
+        /// out of each state based upon symbol inputs.
         /// Refer Dragon Book pg 246
         /// </summary>
         /// <returns></returns>
-        public virtual List<ParserState> CreateStates()
+        public Tuple<IList<ParserState>, StateTransitionMap> CreateStates()
         {
+            var stateMap = new StateTransitionMap();
+            int currentStateNumber = 0;
             //The first state is the closure of the starting symbol.
-            var states = new List<ParserState>
-                             {
-                                 new ParserState(GetClosure(_grammarProvider.GetAugmentedState()))
-                             };
-            var grammarSymbols = _grammarProvider.GetGrammarSymbols();
+            IList<ParserState> states = new List<ParserState>
+            {
+                new ParserState(currentStateNumber++, GetClosure(_grammar.AugmentedState))
+            };
+            var grammarSymbols = _grammar.Symbols;
             //iterate through the states list.
             //  this list grows as we iterate
             for (int i = 0; i < states.Count; i++)
@@ -76,16 +78,18 @@ namespace MParse.Core
                             //if there is not already a state with this set of items
                             //  then create a new state with that set of items
                             //  and add it to the states list
-                            transitionTo = new ParserState(gotoForSymbol);
+                            transitionTo = new ParserState(currentStateNumber++, gotoForSymbol);
                             states.Add(transitionTo);
                         }
                         //add the state transition from the current state 
-                        //  to the state with the goto set.
-                        state.AddTransition(grammarSymbol, transitionTo);
+                        //  to the state of the goto set.
+                        //  We do this here so that it is not necessary to 
+                        //  calculate it again at a later stage.
+                        stateMap.AddTransition(state, grammarSymbol, transitionTo);
                     }
                 }
             }
-            return states;
+            return Tuple.Create(states, stateMap);
         }
 
         /// <summary>
@@ -112,7 +116,7 @@ namespace MParse.Core
             return false;
         }
 
-        public virtual List<Item> GetClosure(Item item)
+        public IList<Item> GetClosure(Item item)
         {
             return GetClosure(new[] { item });
         }
@@ -122,9 +126,9 @@ namespace MParse.Core
         /// </summary>
         /// <param name="items"></param>
         /// <returns></returns>
-        public virtual List<Item> GetClosure(IEnumerable<Item> items)
+        public IList<Item> GetClosure(IEnumerable<Item> items)
         {
-            var productions = _grammarProvider.GetProductions();
+            var productions = _grammar.Productions;
 
             var closure = new List<Item>();
             //the closure contains all of the original items
@@ -162,7 +166,7 @@ namespace MParse.Core
         /// </summary>
         /// <param name="symbol"></param>
         /// <returns></returns>
-        public virtual List<Terminal> FirstSet(GrammarSymbol symbol)
+        public IList<Terminal> FirstSet(GrammarSymbol symbol)
         {
             if (symbol == null)
                 throw new ArgumentNullException("symbol");
@@ -176,7 +180,7 @@ namespace MParse.Core
                 return new List<Terminal> { symbol as Terminal };
 
             var result = new HashSet<Terminal>();
-            var productions = _grammarProvider.GetProductions();
+            var productions = _grammar.Productions;
 
             //Get the starting symbol of a production where:
             //  The production has a valid tail (doesn't derive to an empty string)
@@ -210,7 +214,7 @@ namespace MParse.Core
         /// </remarks>
         /// <param name="nonTerminal"></param>
         /// <returns></returns>
-        public virtual List<GrammarSymbol> FollowSet(GrammarSymbol nonTerminal)
+        public IList<GrammarSymbol> FollowSet(GrammarSymbol nonTerminal)
         {
 
             if (nonTerminal == null)
@@ -223,7 +227,7 @@ namespace MParse.Core
                 throw new ArgumentException("Cannot calculate the FOLLOW set for a Terminal.", "nonTerminal");
 
             var result = new HashSet<GrammarSymbol>();
-            var productions = _grammarProvider.GetProductions();
+            var productions = _grammar.Productions;
 
             foreach (var production in productions)
             {

@@ -8,48 +8,15 @@ using System.Xml.Serialization;
 using System.Xml.XPath;
 using MParse.Core.GrammarElements;
 using MParse.Core.Interfaces;
+using MParse.Core;
 
 namespace MParse.GrammarProviders
 {
     public class XmlGrammarProvider : IGrammarProvider
     {
-        private Production[] _productions;
-        private GrammarSymbol[] _grammarSymbols;
-
-        private string _input;
-
-        public void SetInput(string inputData)
+        public Grammar GetGrammar()
         {
-            _input = inputData;
+            throw new NotImplementedException();
         }
-
-        public Production[] GetProductions()
-        {
-            if(_productions == null)
-                ParseInputData();
-            return _productions;
-        }
-
-        public GrammarSymbol[] GetGrammarSymbols()
-        {
-            if (_grammarSymbols == null)
-                ParseInputData();
-            return _grammarSymbols;
-        }
-
-        public Item GetAugmentedState()
-        {
-            if (_productions == null)
-                ParseInputData();
-            return new Item(0, _productions[0]);
-        }
-
-        private void ParseInputData()
-        {
-            
-        }
-
-       
-
     }
 }
