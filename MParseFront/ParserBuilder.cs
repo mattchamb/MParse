@@ -13,6 +13,22 @@ namespace MParseFront
 {
     class ParserBuilder
     {
+
+        private static class Constants
+        {
+            public const string TerminalBaseClassName = "_Terminal";
+            public const string TerminalActionMethodName = "Action";
+            public const string StateStackVarName = "stateStack";
+            public const string ParseStackVarName = "parseStack";
+            public static readonly Type StateStackType = typeof(Stack<int>);
+            public static readonly Type ParseStackType = typeof(Stack<object>);
+            public const string ActionEnumName = "ActionResult";
+            public const string ReductionInterfaceName = "IReducer";
+            public const string ReductionGotoMethodName = "Goto";
+            public const string ReduceByMethodName = "ReduceBy";
+            public const string ParserFunctionName = "Parse";
+        }
+
         private readonly CodeNamespace _codeNamespace;
         private readonly CodeCompileUnit _compileUnit;
         private readonly CodeTypeDeclaration _terminalBase;
@@ -31,7 +47,7 @@ namespace MParseFront
             _symbols = symbols;
             _transitionTable = transTable;
 
-            _terminalBase = new CodeTypeDeclaration("_Terminal")
+            _terminalBase = new CodeTypeDeclaration(Constants.TerminalBaseClassName)
             {
                 TypeAttributes = TypeAttributes.Abstract | TypeAttributes.Public,
             };
@@ -41,7 +57,7 @@ namespace MParseFront
             _codeNamespace.Types.Add(GetIReducerInterface());
 
             AddTerminalTextProperty(_terminalBase);
-            AddTerminalToString(_terminalBase);
+            AddTerminalToStringMethod(_terminalBase);
 
             foreach (var symbol in symbols)
             {
@@ -61,76 +77,94 @@ namespace MParseFront
 
         private CodeTypeDeclaration GetIReducerInterface()
         {
-            var result = new CodeTypeDeclaration("IReducer")
+            var result = new CodeTypeDeclaration(Constants.ReductionInterfaceName)
             {
                 IsInterface = true
             };
             var gotoMethod = new CodeMemberMethod()
             {
-                Name = "Goto",
+                Name = Constants.ReductionGotoMethodName,
                 ReturnType = new CodeTypeReference(typeof(void)),
             };
-            gotoMethod.Parameters.Add(new CodeParameterDeclarationExpression(new CodeTypeReference(typeof(Stack<int>)), "states"));
+            gotoMethod.Parameters.Add(new CodeParameterDeclarationExpression(Constants.StateStackType, Constants.StateStackVarName));
             result.Members.Add(gotoMethod);
             return result;
         }
 
         private void AddParserFunctionBody(CodeMemberMethod parserMethod)
         {
-            parserMethod.Statements.Add(new CodeVariableDeclarationStatement(new CodeTypeReference(typeof(Stack<int>)), "stateStack", new CodeObjectCreateExpression(new CodeTypeReference(typeof(Stack<int>)))));
-            var stateStack = new CodeVariableReferenceExpression("stateStack");
+            parserMethod.Statements.Add(DeclareVariable(Constants.StateStackType, Constants.StateStackVarName, new CodeObjectCreateExpression(Constants.StateStackType)));
+            var stateStack = new CodeVariableReferenceExpression(Constants.StateStackVarName);
 
-            parserMethod.Statements.Add(new CodeVariableDeclarationStatement(new CodeTypeReference(typeof(Stack<object>)), "parseStack", new CodeObjectCreateExpression(new CodeTypeReference(typeof(Stack<object>)))));
-            var parseStack = new CodeVariableReferenceExpression("parseStack");
+            parserMethod.Statements.Add(DeclareVariable(Constants.ParseStackType, Constants.ParseStackVarName, new CodeObjectCreateExpression(Constants.ParseStackType)));
+            var parseStack = new CodeVariableReferenceExpression(Constants.ParseStackVarName);
 
             parserMethod.Statements.Add(new CodeMethodInvokeExpression(stateStack, "Push", new CodePrimitiveExpression(0)));
 
-            parserMethod.Statements.Add(new CodeVariableDeclarationStatement(new CodeTypeReference(typeof(int)), "tokenPos", new CodePrimitiveExpression(0)));
+            parserMethod.Statements.Add(DeclareVariable(typeof(int), "tokenPos", new CodePrimitiveExpression(0)));
 
+            //Infinite Loop
             var loop = new CodeIterationStatement(new CodeSnippetStatement(), new CodePrimitiveExpression(true), new CodeSnippetStatement());
             parserMethod.Statements.Add(loop);
 
             var tokenPos = new CodeVariableReferenceExpression("tokenPos");
-            loop.Statements.Add(new CodeLabeledStatement("startLoop", new CodeVariableDeclarationStatement(new CodeTypeReference("_Terminal"), "t", new CodeIndexerExpression(new CodeArgumentReferenceExpression("tokens"), tokenPos))));
+
+            loop.Statements.Add(new CodeLabeledStatement("startLoop", DeclareVariable(new CodeTypeReference(Constants.TerminalBaseClassName), "t", new CodeIndexerExpression(new CodeArgumentReferenceExpression("tokens"), tokenPos))));
             
 
-            var actionResultRef = new CodeTypeReference("ActionResult");
-            loop.Statements.Add(new CodeVariableDeclarationStatement(actionResultRef, "result", new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeVariableReferenceExpression("t"), "Action"), stateStack, parseStack)));
+            var actionResultRef = new CodeTypeReference(Constants.ActionEnumName);
+            var actionResultRefExpr = new CodeTypeReferenceExpression(Constants.ActionEnumName);
+            loop.Statements.Add(DeclareVariable(actionResultRef, "result", new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeVariableReferenceExpression("t"), Constants.TerminalActionMethodName), stateStack, parseStack)));
 
             var resultVar = new CodeVariableReferenceExpression("result");
 
-            var ifAccept = new CodeConditionStatement(new CodeBinaryOperatorExpression(resultVar, CodeBinaryOperatorType.ValueEquality, new CodeFieldReferenceExpression(new CodeTypeReferenceExpression("ActionResult"), "Accept")));
+            var ifAccept = new CodeConditionStatement(new CodeBinaryOperatorExpression(resultVar, CodeBinaryOperatorType.ValueEquality, FieldReference(actionResultRefExpr, "Accept")));
             loop.Statements.Add(ifAccept);
             ifAccept.TrueStatements.Add(new CodeGotoStatement("breakLoop"));
 
-            var ifShiftContinue = new CodeConditionStatement(new CodeBinaryOperatorExpression(resultVar, CodeBinaryOperatorType.ValueEquality, new CodeFieldReferenceExpression(new CodeTypeReferenceExpression("ActionResult"), "ShiftContinue")));
+            var ifShiftContinue = new CodeConditionStatement(new CodeBinaryOperatorExpression(resultVar, CodeBinaryOperatorType.ValueEquality, FieldReference(actionResultRefExpr, "ShiftContinue")));
             loop.Statements.Add(ifShiftContinue);
             ifShiftContinue.TrueStatements.Add(new CodeAssignStatement(tokenPos, new CodeBinaryOperatorExpression(tokenPos, CodeBinaryOperatorType.Add, new CodePrimitiveExpression(1))));
             ifShiftContinue.TrueStatements.Add(new CodeGotoStatement("startLoop"));
 
-            var ifReduceContinue = new CodeConditionStatement(new CodeBinaryOperatorExpression(resultVar, CodeBinaryOperatorType.ValueEquality, new CodeFieldReferenceExpression(new CodeTypeReferenceExpression("ActionResult"), "ReduceContinue")));
+            var ifReduceContinue = new CodeConditionStatement(new CodeBinaryOperatorExpression(resultVar, CodeBinaryOperatorType.ValueEquality, FieldReference(actionResultRefExpr, "ReduceContinue")));
             loop.Statements.Add(ifReduceContinue);
-            ifReduceContinue.TrueStatements.Add(new CodeVariableDeclarationStatement("IReducer", "reducer", new CodeCastExpression("IReducer", new CodeMethodInvokeExpression(parseStack, "Peek"))));
-            ifReduceContinue.TrueStatements.Add(new CodeMethodInvokeExpression(new CodeVariableReferenceExpression("reducer"), "Goto", stateStack));
+            ifReduceContinue.TrueStatements.Add(new CodeVariableDeclarationStatement(Constants.ReductionInterfaceName, "reducer", new CodeCastExpression(Constants.ReductionInterfaceName, new CodeMethodInvokeExpression(parseStack, "Peek"))));
+            ifReduceContinue.TrueStatements.Add(new CodeMethodInvokeExpression(new CodeVariableReferenceExpression("reducer"), Constants.ReductionGotoMethodName, stateStack));
             ifReduceContinue.TrueStatements.Add(new CodeGotoStatement("startLoop"));
 
-            var ifError = new CodeConditionStatement(new CodeBinaryOperatorExpression(resultVar, CodeBinaryOperatorType.ValueEquality, new CodeFieldReferenceExpression(new CodeTypeReferenceExpression("ActionResult"), "Error")));
+            var ifError = new CodeConditionStatement(new CodeBinaryOperatorExpression(resultVar, CodeBinaryOperatorType.ValueEquality, new CodeFieldReferenceExpression(actionResultRefExpr, "Error")));
             loop.Statements.Add(ifError);
             ifError.TrueStatements.Add(new CodeThrowExceptionStatement(new CodeObjectCreateExpression(new CodeTypeReference(typeof(Exception)), new CodePrimitiveExpression("Parsing Failed."))));
 
             parserMethod.Statements.Add(new CodeLabeledStatement("breakLoop", new CodeMethodReturnStatement(new CodeCastExpression(parserMethod.ReturnType, new CodeMethodInvokeExpression(parseStack, "Pop")))));
         }
 
+        private CodeVariableDeclarationStatement DeclareVariable(CodeTypeReference type, string variableName, CodeExpression initExpression)
+        {
+            return new CodeVariableDeclarationStatement(type, variableName, initExpression);
+        }
+
+        private CodeVariableDeclarationStatement DeclareVariable(Type type, string variableName, CodeExpression initExpression)
+        {
+            return new CodeVariableDeclarationStatement(type, variableName, initExpression);
+        }
+
+        private CodeFieldReferenceExpression FieldReference(CodeTypeReferenceExpression type, string fieldName)
+        {
+            return new CodeFieldReferenceExpression(type, fieldName);
+        }
+
         private CodeTypeDeclaration GetActionResultEnum()
         {
-            var result = new CodeTypeDeclaration("ActionResult")
+            var result = new CodeTypeDeclaration(Constants.ActionEnumName)
             {
                 IsEnum = true
             };
-            result.Members.Add(new CodeMemberField("ActionResult", "Error"));
-            result.Members.Add(new CodeMemberField("ActionResult", "Accept"));
-            result.Members.Add(new CodeMemberField("ActionResult", "ShiftContinue"));
-            result.Members.Add(new CodeMemberField("ActionResult", "ReduceContinue"));
+            result.Members.Add(new CodeMemberField(Constants.ActionEnumName, "Error"));
+            result.Members.Add(new CodeMemberField(Constants.ActionEnumName, "Accept"));
+            result.Members.Add(new CodeMemberField(Constants.ActionEnumName, "ShiftContinue"));
+            result.Members.Add(new CodeMemberField(Constants.ActionEnumName, "ReduceContinue"));
             return result;
         }
 
@@ -138,13 +172,12 @@ namespace MParseFront
         {
             var result = new CodeMemberMethod
             {
-                Name = "Action",
+                Name = Constants.TerminalActionMethodName,
                 Attributes = MemberAttributes.Public | MemberAttributes.Abstract,
-                ReturnType = new CodeTypeReference("ActionResult")
+                ReturnType = new CodeTypeReference(Constants.ActionEnumName)
             };
-            
-            result.Parameters.Add(new CodeParameterDeclarationExpression("Stack<int>", "states"));
-            result.Parameters.Add(new CodeParameterDeclarationExpression("Stack<object>", "parseStack"));
+            result.Parameters.Add(new CodeParameterDeclarationExpression(Constants.StateStackType, Constants.StateStackVarName));
+            result.Parameters.Add(new CodeParameterDeclarationExpression(Constants.ParseStackType, Constants.ParseStackVarName));
             return result;
         }
 
@@ -153,12 +186,12 @@ namespace MParseFront
             var ctor = new CodeConstructor();
             ctor.Attributes = MemberAttributes.Family;
             ctor.Parameters.Add(new CodeParameterDeclarationExpression(typeof(string), "text"));
-            var backingField = AddPropertyToClass("System.String", "Text", terminalBase);
+            var backingField = AddPropertyToClass(typeof(string).FullName, "Text", terminalBase);
             AddFieldAssignmentToConstructor(backingField, ctor, "text");
             terminalBase.Members.Add(ctor);
         }
 
-        private void AddTerminalToString(CodeTypeDeclaration type)
+        private void AddTerminalToStringMethod(CodeTypeDeclaration type)
         {
             var toString = new CodeMemberMethod()
             {
@@ -172,16 +205,6 @@ namespace MParseFront
             toString.Statements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), "_text")));
         }
 
-        public string GetCode(CodeDomProvider codeProdiver, CodeGeneratorOptions generatorOptions)
-        {
-            using(var codeStream = new StringWriter())
-            using(var indentedWriter = new IndentedTextWriter(codeStream, "    "))
-            {
-                codeProdiver.GenerateCodeFromCompileUnit(_compileUnit, indentedWriter, generatorOptions);
-                return codeStream.ToString();
-            }
-        }
-
         private CodeMemberMethod AddParserClass(string name, string parseTreeRootType)
         {
             var parserClass = new CodeTypeDeclaration(name);
@@ -189,11 +212,11 @@ namespace MParseFront
 
             var parserMethod = new CodeMemberMethod()
             {
-                Name = "Parse",
+                Name = Constants.ParserFunctionName,
                 ReturnType = new CodeTypeReference(parseTreeRootType),
                 Attributes = MemberAttributes.Public | MemberAttributes.Final,
             };
-            parserMethod.Parameters.Add(new CodeParameterDeclarationExpression("IList<_Terminal>", "tokens"));
+            parserMethod.Parameters.Add(new CodeParameterDeclarationExpression("IList<" + Constants.TerminalBaseClassName + ">", "tokens"));
             parserClass.Members.Add(parserMethod);
             return parserMethod;
         }
@@ -201,7 +224,7 @@ namespace MParseFront
         private void AddSymbol(NonTerminal head, IEnumerable<Production> productions)
         {
             var nonTermAbstractBase = new CodeTypeDeclaration(head.Name);
-            nonTermAbstractBase.BaseTypes.Add(new CodeTypeReference("IReducer"));
+            nonTermAbstractBase.BaseTypes.Add(new CodeTypeReference(Constants.ReductionInterfaceName));
             nonTermAbstractBase.TypeAttributes = TypeAttributes.Abstract | TypeAttributes.Public;
             nonTermAbstractBase.Members.Add(ImplementReducerGoto(head));
             var concreteTypes = GetConcreteTypesForProductions(nonTermAbstractBase, productions);
@@ -213,14 +236,14 @@ namespace MParseFront
         {
             var result = new CodeMemberMethod()
             {
-                Name = "Goto",
+                Name = Constants.ReductionGotoMethodName,
                 ReturnType = new CodeTypeReference(typeof(void)),
                 Attributes = MemberAttributes.Public | MemberAttributes.Final
 
             };
-            result.Parameters.Add(new CodeParameterDeclarationExpression(new CodeTypeReference(typeof(Stack<int>)), "states"));
-            var states = new CodeArgumentReferenceExpression("states");
-            result.Statements.Add(new CodeVariableDeclarationStatement(new CodeTypeReference(typeof(int)), "currentState", new CodeMethodInvokeExpression(states, "Peek")));
+            result.Parameters.Add(new CodeParameterDeclarationExpression(Constants.StateStackType, Constants.StateStackVarName));
+            var states = new CodeArgumentReferenceExpression(Constants.StateStackVarName);
+            result.Statements.Add(DeclareVariable(new CodeTypeReference(typeof(int)), "currentState", new CodeMethodInvokeExpression(states, "Peek")));
 
             foreach (var state in _transitionTable.States)
             {
@@ -266,16 +289,16 @@ namespace MParseFront
         {
             var result = new CodeMemberMethod()
             {
-                Name = "ReduceBy",
+                Name = Constants.ReduceByMethodName,
                 Attributes = MemberAttributes.Public | MemberAttributes.Static,
                 ReturnType = new CodeTypeReference(GetClassName(prod)),
             };
-            result.Parameters.Add(new CodeParameterDeclarationExpression("Stack<object>", "parseTree"));
+            result.Parameters.Add(new CodeParameterDeclarationExpression(Constants.ParseStackType, Constants.ParseStackVarName));
 
             for (int i = 0; i < prod.Tail.Length; i++)
             {
                 string varName = "o" + i;
-                var decl = new CodeVariableDeclarationStatement(typeof(object), varName, new CodeMethodInvokeExpression(new CodeArgumentReferenceExpression("parseTree"), "Pop"));
+                var decl = DeclareVariable(typeof(object), varName, new CodeMethodInvokeExpression(new CodeArgumentReferenceExpression(Constants.ParseStackVarName), "Pop"));
                 result.Statements.Add(decl);
             }
             var ctorArgs = new CodeExpression[prod.Tail.Length];
@@ -320,15 +343,15 @@ namespace MParseFront
         {
             var result = new CodeMemberMethod
             {
-                Name = "Action",
+                Name = Constants.TerminalActionMethodName,
                 Attributes = MemberAttributes.Public | MemberAttributes.Override,
-                ReturnType = new CodeTypeReference("ActionResult")
+                ReturnType = new CodeTypeReference(Constants.ActionEnumName)
             };
-            result.Parameters.Add(new CodeParameterDeclarationExpression("Stack<int>", "states"));
-            result.Parameters.Add(new CodeParameterDeclarationExpression("Stack<object>", "parseStack"));
+            result.Parameters.Add(new CodeParameterDeclarationExpression(Constants.StateStackType, Constants.StateStackVarName));
+            result.Parameters.Add(new CodeParameterDeclarationExpression(Constants.ParseStackType, Constants.ParseStackVarName));
 
-            var states = new CodeArgumentReferenceExpression("states");
-            var parseStack = new CodeArgumentReferenceExpression("parseStack");
+            var states = new CodeArgumentReferenceExpression(Constants.StateStackVarName);
+            var parseStack = new CodeArgumentReferenceExpression(Constants.ParseStackVarName);
 
             result.Statements.Add(new CodeVariableDeclarationStatement(new CodeTypeReference(typeof(int)), "currentState", new CodeMethodInvokeExpression(states, "Peek")));
             
@@ -340,29 +363,28 @@ namespace MParseFront
                 {
                     ifState.TrueStatements.Add(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(states, "Push"), new CodePrimitiveExpression(action.NextState.StateId)));
                     ifState.TrueStatements.Add(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(parseStack, "Push"), new CodeThisReferenceExpression()));
-                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression("ActionResult"), "ShiftContinue")));
+                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(Constants.ActionEnumName), "ShiftContinue")));
                 }
                 if (action.Action == ParserAction.Reduce)
                 {
-                    ifState.TrueStatements.Add(new CodeMethodInvokeExpression(parseStack, "Push", new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(GetClassName(action.ReduceByProduction)), "ReduceBy"), parseStack)));
+                    ifState.TrueStatements.Add(new CodeMethodInvokeExpression(parseStack, "Push", new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(GetClassName(action.ReduceByProduction)), Constants.ReduceByMethodName), parseStack)));
                     for (int i = 0; i < action.ReduceByProduction.Length; i++)
                     {
                         ifState.TrueStatements.Add(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(states, "Pop")));
                     }
-                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression("ActionResult"), "ReduceContinue")));
+                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(Constants.ActionEnumName), "ReduceContinue")));
                 }
                 if (action.Action == ParserAction.Accept)
                 {
-                    //ifState.TrueStatements.Add(new CodeMethodInvokeExpression(parseStack, "Push", new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(GetClassName(_productions.First())), "ReduceBy"), parseStack)));
-                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression("ActionResult"), "Accept")));
+                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(Constants.ActionEnumName), "Accept")));
                 }
                 if (action.Action == ParserAction.Error)
                 {
-                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression("ActionResult"), "Error")));
+                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(Constants.ActionEnumName), "Error")));
                 }
                 result.Statements.Add(ifState);
             }
-            result.Statements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression("ActionResult"), "Error")));
+            result.Statements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(Constants.ActionEnumName), "Error")));
             return result;
         }
 
@@ -386,6 +408,16 @@ namespace MParseFront
         private void AddFieldAssignmentToConstructor(CodeMemberField field, CodeConstructor ctor, string argName)
         {
             ctor.Statements.Add(new CodeAssignStatement(new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), field.Name), new CodeArgumentReferenceExpression(argName)));
+        }
+
+        public string GetCode(CodeDomProvider codeProdiver, CodeGeneratorOptions generatorOptions)
+        {
+            using (var codeStream = new StringWriter())
+            using (var indentedWriter = new IndentedTextWriter(codeStream, "    "))
+            {
+                codeProdiver.GenerateCodeFromCompileUnit(_compileUnit, indentedWriter, generatorOptions);
+                return codeStream.ToString();
+            }
         }
     }
 }

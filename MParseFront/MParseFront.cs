@@ -31,7 +31,7 @@ namespace MParseFront
 
             var table = new TransitionTable(grammar, grammarOperator);
 
-            exec.GenerateOutput(table, tokenStream);
+            //exec.GenerateOutput(table, tokenStream);
             //viewer.GenerateOutput(table, tokenStream);
 
             CreateClasses(grammar.Productions, grammar.Symbols, table);
