@@ -285,13 +285,15 @@ namespace MParseFront
             return concreteTypes;
         }
 
+
         private CodeMemberMethod GetReduceByMethod(Production prod)
         {
+            var currentType = new CodeTypeReference(GetClassName(prod));
             var result = new CodeMemberMethod()
             {
                 Name = Constants.ReduceByMethodName,
                 Attributes = MemberAttributes.Public | MemberAttributes.Static,
-                ReturnType = new CodeTypeReference(GetClassName(prod)),
+                ReturnType = currentType,
             };
             result.Parameters.Add(new CodeParameterDeclarationExpression(Constants.ParseStackType, Constants.ParseStackVarName));
 
@@ -308,7 +310,11 @@ namespace MParseFront
                 ctorArgs[count] = new CodeCastExpression(new CodeTypeReference(prod.Tail[count].Name), new CodeVariableReferenceExpression("o" + i));
                 count++;
             }
-            result.Statements.Add(new CodeMethodReturnStatement(new CodeObjectCreateExpression(GetClassName(prod), ctorArgs)));
+            const string resultVarName = "result";
+            result.Statements.Add(new CodeVariableDeclarationStatement(currentType, resultVarName, new CodeObjectCreateExpression(currentType, ctorArgs)));
+            var resultVar = new CodeVariableReferenceExpression(resultVarName);
+
+            result.Statements.Add(new CodeMethodReturnStatement(resultVar));
             return result;
         }
 
@@ -363,7 +369,7 @@ namespace MParseFront
                 {
                     ifState.TrueStatements.Add(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(states, "Push"), new CodePrimitiveExpression(action.NextState.StateId)));
                     ifState.TrueStatements.Add(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(parseStack, "Push"), new CodeThisReferenceExpression()));
-                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(Constants.ActionEnumName), "ShiftContinue")));
+                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(FieldReference(new CodeTypeReferenceExpression(Constants.ActionEnumName), "ShiftContinue")));
                 }
                 if (action.Action == ParserAction.Reduce)
                 {
@@ -372,19 +378,19 @@ namespace MParseFront
                     {
                         ifState.TrueStatements.Add(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(states, "Pop")));
                     }
-                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(Constants.ActionEnumName), "ReduceContinue")));
+                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(FieldReference(new CodeTypeReferenceExpression(Constants.ActionEnumName), "ReduceContinue")));
                 }
                 if (action.Action == ParserAction.Accept)
                 {
-                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(Constants.ActionEnumName), "Accept")));
+                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(FieldReference(new CodeTypeReferenceExpression(Constants.ActionEnumName), "Accept")));
                 }
                 if (action.Action == ParserAction.Error)
                 {
-                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(Constants.ActionEnumName), "Error")));
+                    ifState.TrueStatements.Add(new CodeMethodReturnStatement(FieldReference(new CodeTypeReferenceExpression(Constants.ActionEnumName), "Error")));
                 }
                 result.Statements.Add(ifState);
             }
-            result.Statements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(Constants.ActionEnumName), "Error")));
+            result.Statements.Add(new CodeMethodReturnStatement(FieldReference(new CodeTypeReferenceExpression(Constants.ActionEnumName), "Error")));
             return result;
         }
 
