@@ -1,0 +1,287 @@
+﻿<#@ template language="C#" inherits="ParserCodeGenBase" #>
+<#@ import namespace="MParse.Core.GrammarElements" #>
+<#@ import namespace="MParse.Core" #>
+<#@ import namespace="System.Linq" #>
+namespace <#= _codeNamespace #>
+{
+    using System;
+    using System.Collections.Generic;
+
+    public class Parser 
+    {
+        public <#= Constants.TreeNode #> Parse(IEnumerable<<#= Constants.TerminalBaseClassName #>> tokens)
+        {
+			if (!tokens.MoveNext())
+                throw new ArgumentException("Cannot access tokens.", "tokens");
+
+            var stateStack = new Stack<int>();
+            var parseStack = new Stack<<#= Constants.TreeNode #>>();
+            stateStack.Push(0);
+
+            while(true)
+            {
+                var t = tokens.Current;
+                var result = t.Action(stateStack, parseStack);
+                if ((result == ActionResult.Accept))
+                {
+                    break;
+                }
+                if (result == ActionResult.ShiftContinue)
+                {
+                    tokens.MoveNext();
+                    continue;
+                }
+                if (result == ActionResult.ReduceContinue)
+                {
+                    var reducer = ((<#= Constants.ReductionInterfaceName #>)(parseStack.Peek()));
+                    reducer.Goto(stateStack);
+                    continue;
+                }
+                if (result == ActionResult.Error)
+                {
+                    throw new Exception("Parsing Failed.");
+                }
+            }
+            return (<#= Constants.TreeNode #>)parseStack.Pop();
+        }
+    }
+
+    public interface IParseTreeVisitor
+    {
+<#
+foreach(var symbol in _symbols)
+{
+if(symbol is Terminal)
+{
+#>
+        void Visit_<#= ((Terminal)symbol).Name #>(<#= ((Terminal)symbol).Name #> terminal);
+<#
+}
+else
+{
+foreach(var prod in _productions.Where(x => x.Head == symbol))
+{
+var className = GetClassName(prod);
+#>
+        void Visit_<#= className #>(<#= className #> nonTerminal);
+<#
+}
+}
+}
+#>
+    }
+
+    public abstract class <#= Constants.TreeNode #>
+    {
+        private Guid _nodeId;
+
+        public <#= Constants.TreeNode #>()
+        {
+            _nodeId = Guid.NewGuid();
+        }
+
+        public virtual void AcceptVisitor(IParseTreeVisitor visitor)
+        {
+            //No default implementation
+        }
+    }
+    
+    public abstract class <#= Constants.TerminalBaseClassName #> : <#= Constants.TreeNode #>
+    {
+        private string _text;
+        
+        protected <#= Constants.TerminalBaseClassName #>(string text)
+        {
+            _text = text;
+        }
+        
+        public string Text
+        {
+            get
+            {
+                return _text;
+            }
+        }
+        
+        public abstract ActionResult Action(Stack<int> stateStack, Stack<<#= Constants.TreeNode #>> parseStack);
+        
+        public override string ToString()
+        {
+            return _text;
+        }
+    }
+
+    public enum ActionResult
+    {
+        Error,
+        Accept,
+        ShiftContinue,
+        ReduceContinue,
+    }
+
+    public interface <#= Constants.ReductionInterfaceName #>
+    {
+        void Goto(Stack<int> stateStack);
+    }
+
+<#
+foreach (var symbol in _symbols)
+{
+if (symbol is Terminal)
+{
+#>
+    public partial class <#= symbol.Name #> : <#= Constants.TerminalBaseClassName #>
+    {
+        public <#= symbol.Name #>(string text) : base(text)
+        {
+        }
+
+        public override ActionResult Action(Stack<int> stateStack, Stack<<#= Constants.TreeNode #>> parseStack)
+        {
+            int currentState = stateStack.Peek();
+<#
+foreach (var state in _table.States)
+{
+var action = _table[state, symbol];
+#>
+            if(currentState == <#= state.StateId #>)
+            {
+<#
+if (action.Action == ParserAction.Shift)
+{
+#>
+                stateStack.Push(<#= action.NextState.StateId #>);
+                parseStack.Push(this);
+                return ActionResult.ShiftContinue;
+<#
+}
+#>
+<#
+if (action.Action == ParserAction.Reduce)
+{
+#>
+                parseStack.Push(<#= GetClassName(action.ReduceByProduction) #>.<#= Constants.ReduceByMethodName #>(parseStack));
+<#
+for (int i = 0; i < action.ReduceByProduction.Length; i++)
+{
+#>
+                stateStack.Pop();
+<#
+}
+#>
+                return ActionResult.ReduceContinue;
+<#
+}
+#>
+<#
+if (action.Action == ParserAction.Accept)
+{
+#>
+                return ActionResult.Accept;
+<#
+}
+#>
+<#
+if (action.Action == ParserAction.Error)
+{
+#>
+                return ActionResult.Error;
+<#
+}
+#>
+            }
+<#
+}
+#>
+        }
+    }
+
+<#
+}
+else
+{
+#>
+	public abstract class <#= symbol.Name #> : <#= Constants.TreeNode #>, <#= Constants.ReductionInterfaceName #>
+	{
+		public void Goto(Stack<int> stateStack)
+		{
+			int currentState = stateStack.Peek();
+<#
+foreach (var state in _table.States)
+{
+var action = _table[state, symbol];
+if (action.Action == ParserAction.Goto)
+{
+#>
+			if(currentState == <#= state.StateId #>)
+			{
+				stateStack.Push(<#= action.NextState.StateId #>);
+				return;
+			}
+<#
+}
+}
+#>
+			throw new Exception("Unexpected GOTO operation.");
+		}
+	}
+
+<#
+}
+}
+#>
+<#
+foreach(var symbol in _symbols.Where(x => x is NonTerminal))
+foreach(var prod in _productions.Where(x => x.Head == symbol ))
+{
+var className = GetClassName(prod);
+#>
+	public partial class <#= className #> : <#= prod.Head #>
+	{
+<#
+for(int i = 0; i < prod.Length; i++)
+{
+#>
+		public <#= prod[i].Name #> T<#= i #> { get; private set; }
+<#
+}
+#>
+
+		public <#= className #>(IList<<#= Constants.TreeNode #>> nodes)
+		{
+			if(nodes.Length != <#= prod.Length #>)
+			{
+				throw new ArgumentException("The list of nodes given is of the wrong length.", "nodes");
+			}
+<#
+for(int i = 0; i < prod.Length; i++)
+{
+#>
+			T<#= i #> = (<#= prod[i].Name #>)nodes[<#= i #>];
+<#
+}
+#>
+		}
+
+		public static <#= className #> <#= Constants.ReduceByMethodName #>(Stack<<#= Constants.TreeNode #>> parseStack)
+		{
+			//reverse the nodes because they are popped off in the inverted order.
+			var nodes = new <#= Constants.TreeNode #>[]
+			{
+<#
+for(int i = 0; i < prod.Length; i++)
+{
+#>
+				parseStack.Pop(),
+<#
+}
+#>
+			}.Reverse().ToArray();
+		}
+	}
+
+<#
+}
+#>
+} //End Namespace
+

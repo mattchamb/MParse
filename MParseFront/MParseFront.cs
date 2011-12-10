@@ -45,13 +45,13 @@ namespace MParseFront
 
 
 
-        private static ParserBuilder CreateClasses(IEnumerable<Production> productions, IEnumerable<GrammarSymbol> symbols, TransitionTable tt)
+        private static void CreateClasses(IEnumerable<Production> productions, IEnumerable<GrammarSymbol> symbols, TransitionTable tt)
         {
-            var parserBuilder = new ParserBuilder("TestNamespace", productions, symbols, tt);
-            var s = parserBuilder.GetCode(new CSharpCodeProvider(), new CodeGeneratorOptions());
-            File.WriteAllText("out.cs", s);
-
-            return parserBuilder;
+            //var parserBuilder = new ParserBuilder("TestNamespace", productions, symbols, tt);
+            //var s = parserBuilder.GetCode(new CSharpCodeProvider(), new CodeGeneratorOptions());
+            ParserTemplate pt = new ParserTemplate();
+            pt.Init("TestNamespace", productions, symbols, tt);
+            File.WriteAllText("out2.cs", pt.TransformText());
         }
     }
 }
