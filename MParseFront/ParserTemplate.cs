@@ -28,26 +28,31 @@ namespace MParseFront
             
             #line default
             #line hidden
-            this.Write("\r\n{\r\n    using System;\r\n    using System.Collections.Generic;\r\n\r\n    public class" +
-                    " Parser \r\n    {\r\n        public ");
+            this.Write("\r\n{\r\n    using System;\r\n    using System.Linq;\r\n    using System.Collections.Gene" +
+                    "ric;\r\n\r\n    public class Parser \r\n    {\r\n        public ");
             
-            #line 12 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 13 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TreeNode));
             
             #line default
             #line hidden
             this.Write(" Parse(IEnumerable<");
             
-            #line 12 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 13 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TerminalBaseClassName));
             
             #line default
             #line hidden
-            this.Write("> tokens)\r\n        {\r\n\t\t\tif (!tokens.MoveNext())\r\n                throw new Argum" +
-                    "entException(\"Cannot access tokens.\", \"tokens\");\r\n\r\n            var stateStack =" +
-                    " new Stack<int>();\r\n            var parseStack = new Stack<");
+            this.Write(@"> tokens)
+        {
+            var tokenEnumerator = tokens.GetEnumerator();
+            if (!tokenEnumerator.MoveNext())
+                throw new ArgumentException(""Cannot access tokens."", ""tokens"");
+
+            var stateStack = new Stack<int>();
+            var parseStack = new Stack<");
             
-            #line 18 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 20 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TreeNode));
             
             #line default
@@ -57,7 +62,7 @@ namespace MParseFront
 
             while(true)
             {
-                var t = tokens.Current;
+                var t = tokenEnumerator.Current;
                 var result = t.Action(stateStack, parseStack);
                 if ((result == ActionResult.Accept))
                 {
@@ -65,14 +70,14 @@ namespace MParseFront
                 }
                 if (result == ActionResult.ShiftContinue)
                 {
-                    tokens.MoveNext();
+                    tokenEnumerator.MoveNext();
                     continue;
                 }
                 if (result == ActionResult.ReduceContinue)
                 {
                     var reducer = ((");
             
-            #line 36 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 38 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.ReductionInterfaceName));
             
             #line default
@@ -88,7 +93,7 @@ namespace MParseFront
             }
             return (");
             
-            #line 45 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 47 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TreeNode));
             
             #line default
@@ -96,7 +101,7 @@ namespace MParseFront
             this.Write(")parseStack.Pop();\r\n        }\r\n    }\r\n\r\n    public interface IParseTreeVisitor\r\n " +
                     "   {\r\n");
             
-            #line 51 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 53 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 foreach(var symbol in _symbols)
 {
@@ -108,21 +113,21 @@ if(symbol is Terminal)
             #line hidden
             this.Write("        void Visit_");
             
-            #line 57 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 59 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(((Terminal)symbol).Name));
             
             #line default
             #line hidden
             this.Write("(");
             
-            #line 57 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 59 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(((Terminal)symbol).Name));
             
             #line default
             #line hidden
             this.Write(" terminal);\r\n");
             
-            #line 58 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 60 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 }
 else
@@ -136,21 +141,21 @@ var className = GetClassName(prod);
             #line hidden
             this.Write("        void Visit_");
             
-            #line 66 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 68 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(className));
             
             #line default
             #line hidden
             this.Write("(");
             
-            #line 66 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 68 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(className));
             
             #line default
             #line hidden
             this.Write(" nonTerminal);\r\n");
             
-            #line 67 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 69 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 }
 }
@@ -161,14 +166,14 @@ var className = GetClassName(prod);
             #line hidden
             this.Write("    }\r\n\r\n    public abstract class ");
             
-            #line 74 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 76 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TreeNode));
             
             #line default
             #line hidden
             this.Write("\r\n    {\r\n        private Guid _nodeId;\r\n\r\n        public ");
             
-            #line 78 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 80 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TreeNode));
             
             #line default
@@ -177,21 +182,21 @@ var className = GetClassName(prod);
                     " virtual void AcceptVisitor(IParseTreeVisitor visitor)\r\n        {\r\n            /" +
                     "/No default implementation\r\n        }\r\n    }\r\n    \r\n    public abstract class ");
             
-            #line 89 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 91 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TerminalBaseClassName));
             
             #line default
             #line hidden
             this.Write(" : ");
             
-            #line 89 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 91 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TreeNode));
             
             #line default
             #line hidden
             this.Write("\r\n    {\r\n        private string _text;\r\n        \r\n        protected ");
             
-            #line 93 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 95 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TerminalBaseClassName));
             
             #line default
@@ -211,7 +216,7 @@ var className = GetClassName(prod);
         
         public abstract ActionResult Action(Stack<int> stateStack, Stack<");
             
-            #line 106 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 108 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TreeNode));
             
             #line default
@@ -234,14 +239,14 @@ var className = GetClassName(prod);
 
     public interface ");
             
-            #line 122 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 124 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.ReductionInterfaceName));
             
             #line default
             #line hidden
             this.Write("\r\n    {\r\n        void Goto(Stack<int> stateStack);\r\n    }\r\n\r\n");
             
-            #line 127 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 129 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 foreach (var symbol in _symbols)
 {
@@ -253,21 +258,21 @@ if (symbol is Terminal)
             #line hidden
             this.Write("    public partial class ");
             
-            #line 133 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 135 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(symbol.Name));
             
             #line default
             #line hidden
             this.Write(" : ");
             
-            #line 133 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 135 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TerminalBaseClassName));
             
             #line default
             #line hidden
             this.Write("\r\n    {\r\n        public ");
             
-            #line 135 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 137 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(symbol.Name));
             
             #line default
@@ -275,14 +280,14 @@ if (symbol is Terminal)
             this.Write("(string text) : base(text)\r\n        {\r\n        }\r\n\r\n        public override Actio" +
                     "nResult Action(Stack<int> stateStack, Stack<");
             
-            #line 139 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 141 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TreeNode));
             
             #line default
             #line hidden
             this.Write("> parseStack)\r\n        {\r\n            int currentState = stateStack.Peek();\r\n");
             
-            #line 142 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 144 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 foreach (var state in _table.States)
 {
@@ -293,14 +298,14 @@ var action = _table[state, symbol];
             #line hidden
             this.Write("            if(currentState == ");
             
-            #line 147 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 149 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(state.StateId));
             
             #line default
             #line hidden
             this.Write(")\r\n            {\r\n");
             
-            #line 149 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 151 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 if (action.Action == ParserAction.Shift)
 {
@@ -310,7 +315,7 @@ if (action.Action == ParserAction.Shift)
             #line hidden
             this.Write("                stateStack.Push(");
             
-            #line 153 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 155 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(action.NextState.StateId));
             
             #line default
@@ -318,7 +323,7 @@ if (action.Action == ParserAction.Shift)
             this.Write(");\r\n                parseStack.Push(this);\r\n                return ActionResult.S" +
                     "hiftContinue;\r\n");
             
-            #line 156 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 158 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 }
 
@@ -326,7 +331,7 @@ if (action.Action == ParserAction.Shift)
             #line default
             #line hidden
             
-            #line 159 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 161 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 if (action.Action == ParserAction.Reduce)
 {
@@ -336,21 +341,21 @@ if (action.Action == ParserAction.Reduce)
             #line hidden
             this.Write("                parseStack.Push(");
             
-            #line 163 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 165 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GetClassName(action.ReduceByProduction)));
             
             #line default
             #line hidden
             this.Write(".");
             
-            #line 163 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 165 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.ReduceByMethodName));
             
             #line default
             #line hidden
             this.Write("(parseStack));\r\n");
             
-            #line 164 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 166 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 for (int i = 0; i < action.ReduceByProduction.Length; i++)
 {
@@ -360,7 +365,7 @@ for (int i = 0; i < action.ReduceByProduction.Length; i++)
             #line hidden
             this.Write("                stateStack.Pop();\r\n");
             
-            #line 169 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 171 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 }
 
@@ -369,7 +374,7 @@ for (int i = 0; i < action.ReduceByProduction.Length; i++)
             #line hidden
             this.Write("                return ActionResult.ReduceContinue;\r\n");
             
-            #line 173 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 175 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 }
 
@@ -377,7 +382,7 @@ for (int i = 0; i < action.ReduceByProduction.Length; i++)
             #line default
             #line hidden
             
-            #line 176 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 178 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 if (action.Action == ParserAction.Accept)
 {
@@ -387,7 +392,7 @@ if (action.Action == ParserAction.Accept)
             #line hidden
             this.Write("                return ActionResult.Accept;\r\n");
             
-            #line 181 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 183 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 }
 
@@ -395,7 +400,7 @@ if (action.Action == ParserAction.Accept)
             #line default
             #line hidden
             
-            #line 184 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 186 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 if (action.Action == ParserAction.Error)
 {
@@ -405,7 +410,7 @@ if (action.Action == ParserAction.Error)
             #line hidden
             this.Write("                return ActionResult.Error;\r\n");
             
-            #line 189 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 191 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 }
 
@@ -414,16 +419,16 @@ if (action.Action == ParserAction.Error)
             #line hidden
             this.Write("            }\r\n");
             
-            #line 193 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 195 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 }
 
             
             #line default
             #line hidden
-            this.Write("        }\r\n    }\r\n\r\n");
+            this.Write("\t\t\treturn ActionResult.Error;\r\n        }\r\n    }\r\n\r\n");
             
-            #line 199 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 202 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 }
 else
@@ -432,31 +437,31 @@ else
             
             #line default
             #line hidden
-            this.Write("\tpublic abstract class ");
+            this.Write("    public abstract class ");
             
-            #line 204 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 207 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(symbol.Name));
             
             #line default
             #line hidden
             this.Write(" : ");
             
-            #line 204 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 207 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TreeNode));
             
             #line default
             #line hidden
             this.Write(", ");
             
-            #line 204 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 207 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.ReductionInterfaceName));
             
             #line default
             #line hidden
-            this.Write("\r\n\t{\r\n\t\tpublic void Goto(Stack<int> stateStack)\r\n\t\t{\r\n\t\t\tint currentState = state" +
-                    "Stack.Peek();\r\n");
+            this.Write("\r\n    {\r\n        public void Goto(Stack<int> stateStack)\r\n        {\r\n            " +
+                    "int currentState = stateStack.Peek();\r\n");
             
-            #line 209 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 212 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 foreach (var state in _table.States)
 {
@@ -467,23 +472,23 @@ if (action.Action == ParserAction.Goto)
             
             #line default
             #line hidden
-            this.Write("\t\t\tif(currentState == ");
+            this.Write("            if(currentState == ");
             
-            #line 216 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 219 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(state.StateId));
             
             #line default
             #line hidden
-            this.Write(")\r\n\t\t\t{\r\n\t\t\t\tstateStack.Push(");
+            this.Write(")\r\n            {\r\n                stateStack.Push(");
             
-            #line 218 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 221 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(action.NextState.StateId));
             
             #line default
             #line hidden
-            this.Write(");\r\n\t\t\t\treturn;\r\n\t\t\t}\r\n");
+            this.Write(");\r\n                return;\r\n            }\r\n");
             
-            #line 221 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 224 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 }
 }
@@ -491,9 +496,10 @@ if (action.Action == ParserAction.Goto)
             
             #line default
             #line hidden
-            this.Write("\t\t\tthrow new Exception(\"Unexpected GOTO operation.\");\r\n\t\t}\r\n\t}\r\n\r\n");
+            this.Write("            throw new Exception(\"Unexpected GOTO operation.\");\r\n        }\r\n    }\r" +
+                    "\n\r\n");
             
-            #line 229 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 232 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 }
 }
@@ -502,7 +508,7 @@ if (action.Action == ParserAction.Goto)
             #line default
             #line hidden
             
-            #line 233 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 236 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 foreach(var symbol in _symbols.Where(x => x is NonTerminal))
 foreach(var prod in _productions.Where(x => x.Head == symbol ))
@@ -512,23 +518,23 @@ var className = GetClassName(prod);
             
             #line default
             #line hidden
-            this.Write("\tpublic partial class ");
+            this.Write("    public partial class ");
             
-            #line 239 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 242 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(className));
             
             #line default
             #line hidden
             this.Write(" : ");
             
-            #line 239 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 242 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(prod.Head));
             
             #line default
             #line hidden
-            this.Write("\r\n\t{\r\n");
+            this.Write("\r\n    {\r\n");
             
-            #line 241 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 244 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 for(int i = 0; i < prod.Length; i++)
 {
@@ -536,54 +542,54 @@ for(int i = 0; i < prod.Length; i++)
             
             #line default
             #line hidden
-            this.Write("\t\tpublic ");
+            this.Write("        public ");
             
-            #line 245 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 248 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(prod[i].Name));
             
             #line default
             #line hidden
             this.Write(" T");
             
-            #line 245 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 248 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(i));
             
             #line default
             #line hidden
             this.Write(" { get; private set; }\r\n");
             
-            #line 246 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 249 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 }
 
             
             #line default
             #line hidden
-            this.Write("\r\n\t\tpublic ");
+            this.Write("\r\n        private ");
             
-            #line 250 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 253 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(className));
             
             #line default
             #line hidden
             this.Write("(IList<");
             
-            #line 250 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 253 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TreeNode));
             
             #line default
             #line hidden
-            this.Write("> nodes)\r\n\t\t{\r\n\t\t\tif(nodes.Length != ");
+            this.Write("> nodes)\r\n        {\r\n            if(nodes.Count != ");
             
-            #line 252 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 255 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(prod.Length));
             
             #line default
             #line hidden
-            this.Write(")\r\n\t\t\t{\r\n\t\t\t\tthrow new ArgumentException(\"The list of nodes given is of the wrong" +
-                    " length.\", \"nodes\");\r\n\t\t\t}\r\n");
+            this.Write(")\r\n            {\r\n                throw new ArgumentException(\"The list of nodes " +
+                    "given is of the wrong length.\", \"nodes\");\r\n            }\r\n");
             
-            #line 256 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 259 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 for(int i = 0; i < prod.Length; i++)
 {
@@ -591,68 +597,68 @@ for(int i = 0; i < prod.Length; i++)
             
             #line default
             #line hidden
-            this.Write("\t\t\tT");
+            this.Write("            T");
             
-            #line 260 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 263 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(i));
             
             #line default
             #line hidden
             this.Write(" = (");
             
-            #line 260 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 263 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(prod[i].Name));
             
             #line default
             #line hidden
             this.Write(")nodes[");
             
-            #line 260 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 263 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(i));
             
             #line default
             #line hidden
             this.Write("];\r\n");
             
-            #line 261 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 264 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 }
 
             
             #line default
             #line hidden
-            this.Write("\t\t}\r\n\r\n\t\tpublic static ");
+            this.Write("        }\r\n\r\n        public static ");
             
-            #line 266 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 269 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(className));
             
             #line default
             #line hidden
             this.Write(" ");
             
-            #line 266 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 269 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.ReduceByMethodName));
             
             #line default
             #line hidden
             this.Write("(Stack<");
             
-            #line 266 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TreeNode));
-            
-            #line default
-            #line hidden
-            this.Write("> parseStack)\r\n\t\t{\r\n\t\t\t//reverse the nodes because they are popped off in the inv" +
-                    "erted order.\r\n\t\t\tvar nodes = new ");
-            
             #line 269 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TreeNode));
             
             #line default
             #line hidden
-            this.Write("[]\r\n\t\t\t{\r\n");
+            this.Write("> parseStack)\r\n        {\r\n            //reverse the nodes because they are popped" +
+                    " off in the inverted order.\r\n            var nodes = new ");
             
-            #line 271 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 272 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(Constants.TreeNode));
+            
+            #line default
+            #line hidden
+            this.Write("[]\r\n            {\r\n");
+            
+            #line 274 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 for(int i = 0; i < prod.Length; i++)
 {
@@ -660,18 +666,25 @@ for(int i = 0; i < prod.Length; i++)
             
             #line default
             #line hidden
-            this.Write("\t\t\t\tparseStack.Pop(),\r\n");
+            this.Write("                parseStack.Pop(),\r\n");
             
-            #line 276 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            #line 279 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 }
 
             
             #line default
             #line hidden
-            this.Write("\t\t\t}.Reverse().ToArray();\r\n\t\t}\r\n\t}\r\n\r\n");
+            this.Write("            }.Reverse().ToArray();\r\n            return new ");
             
             #line 283 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(className));
+            
+            #line default
+            #line hidden
+            this.Write("(nodes);\r\n        }\r\n    }\r\n\r\n");
+            
+            #line 287 "C:\Projects\MParse\MParseFront\ParserTemplate.tt"
 
 }
 

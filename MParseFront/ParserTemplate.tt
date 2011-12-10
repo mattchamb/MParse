@@ -5,13 +5,15 @@
 namespace <#= _codeNamespace #>
 {
     using System;
+    using System.Linq;
     using System.Collections.Generic;
 
     public class Parser 
     {
         public <#= Constants.TreeNode #> Parse(IEnumerable<<#= Constants.TerminalBaseClassName #>> tokens)
         {
-			if (!tokens.MoveNext())
+            var tokenEnumerator = tokens.GetEnumerator();
+            if (!tokenEnumerator.MoveNext())
                 throw new ArgumentException("Cannot access tokens.", "tokens");
 
             var stateStack = new Stack<int>();
@@ -20,7 +22,7 @@ namespace <#= _codeNamespace #>
 
             while(true)
             {
-                var t = tokens.Current;
+                var t = tokenEnumerator.Current;
                 var result = t.Action(stateStack, parseStack);
                 if ((result == ActionResult.Accept))
                 {
@@ -28,7 +30,7 @@ namespace <#= _codeNamespace #>
                 }
                 if (result == ActionResult.ShiftContinue)
                 {
-                    tokens.MoveNext();
+                    tokenEnumerator.MoveNext();
                     continue;
                 }
                 if (result == ActionResult.ReduceContinue)
@@ -193,6 +195,7 @@ if (action.Action == ParserAction.Error)
 <#
 }
 #>
+			return ActionResult.Error;
         }
     }
 
@@ -201,11 +204,11 @@ if (action.Action == ParserAction.Error)
 else
 {
 #>
-	public abstract class <#= symbol.Name #> : <#= Constants.TreeNode #>, <#= Constants.ReductionInterfaceName #>
-	{
-		public void Goto(Stack<int> stateStack)
-		{
-			int currentState = stateStack.Peek();
+    public abstract class <#= symbol.Name #> : <#= Constants.TreeNode #>, <#= Constants.ReductionInterfaceName #>
+    {
+        public void Goto(Stack<int> stateStack)
+        {
+            int currentState = stateStack.Peek();
 <#
 foreach (var state in _table.States)
 {
@@ -213,18 +216,18 @@ var action = _table[state, symbol];
 if (action.Action == ParserAction.Goto)
 {
 #>
-			if(currentState == <#= state.StateId #>)
-			{
-				stateStack.Push(<#= action.NextState.StateId #>);
-				return;
-			}
+            if(currentState == <#= state.StateId #>)
+            {
+                stateStack.Push(<#= action.NextState.StateId #>);
+                return;
+            }
 <#
 }
 }
 #>
-			throw new Exception("Unexpected GOTO operation.");
-		}
-	}
+            throw new Exception("Unexpected GOTO operation.");
+        }
+    }
 
 <#
 }
@@ -236,49 +239,50 @@ foreach(var prod in _productions.Where(x => x.Head == symbol ))
 {
 var className = GetClassName(prod);
 #>
-	public partial class <#= className #> : <#= prod.Head #>
-	{
+    public partial class <#= className #> : <#= prod.Head #>
+    {
 <#
 for(int i = 0; i < prod.Length; i++)
 {
 #>
-		public <#= prod[i].Name #> T<#= i #> { get; private set; }
+        public <#= prod[i].Name #> T<#= i #> { get; private set; }
 <#
 }
 #>
 
-		public <#= className #>(IList<<#= Constants.TreeNode #>> nodes)
-		{
-			if(nodes.Length != <#= prod.Length #>)
-			{
-				throw new ArgumentException("The list of nodes given is of the wrong length.", "nodes");
-			}
+        private <#= className #>(IList<<#= Constants.TreeNode #>> nodes)
+        {
+            if(nodes.Count != <#= prod.Length #>)
+            {
+                throw new ArgumentException("The list of nodes given is of the wrong length.", "nodes");
+            }
 <#
 for(int i = 0; i < prod.Length; i++)
 {
 #>
-			T<#= i #> = (<#= prod[i].Name #>)nodes[<#= i #>];
+            T<#= i #> = (<#= prod[i].Name #>)nodes[<#= i #>];
 <#
 }
 #>
-		}
+        }
 
-		public static <#= className #> <#= Constants.ReduceByMethodName #>(Stack<<#= Constants.TreeNode #>> parseStack)
-		{
-			//reverse the nodes because they are popped off in the inverted order.
-			var nodes = new <#= Constants.TreeNode #>[]
-			{
+        public static <#= className #> <#= Constants.ReduceByMethodName #>(Stack<<#= Constants.TreeNode #>> parseStack)
+        {
+            //reverse the nodes because they are popped off in the inverted order.
+            var nodes = new <#= Constants.TreeNode #>[]
+            {
 <#
 for(int i = 0; i < prod.Length; i++)
 {
 #>
-				parseStack.Pop(),
+                parseStack.Pop(),
 <#
 }
 #>
-			}.Reverse().ToArray();
-		}
-	}
+            }.Reverse().ToArray();
+            return new <#= className #>(nodes);
+        }
+    }
 
 <#
 }
