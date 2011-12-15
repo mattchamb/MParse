@@ -39,7 +39,7 @@ namespace MParse.OutputGenerators
                                             StateToDotString(stateTransition.Value),
                                             stateTransition.Key);
                         output.AppendLine();
-                        if (!visited[stateTransition.Value])
+                        if (!visited[stateTransition.Value] && !plan.Contains(stateTransition.Value))
                             plan.Enqueue(stateTransition.Value);
                     }
                 }
