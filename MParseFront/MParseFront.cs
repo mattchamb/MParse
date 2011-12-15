@@ -19,7 +19,7 @@ namespace MParseFront
     {
         static void Main(string[] args)
         {
-            IGrammarProvider grammarProvider = new TestGrammarProvider();
+            IGrammarProvider grammarProvider = new GGrammarProvider();
             var grammar = grammarProvider.GetGrammar();
             IGrammarOperator grammarOperator = new GrammarOperator(grammar);
 
@@ -34,9 +34,9 @@ namespace MParseFront
             //exec.GenerateOutput(table, tokenStream);
             //viewer.GenerateOutput(table, tokenStream);
 
-            CreateClasses(grammar.Productions, grammar.Symbols, table);
+            //CreateClasses(grammar.Productions, grammar.Symbols, table);
 
-            //dotOutputGenerator.GenerateOutput(table, tokenStream);
+            dotOutputGenerator.GenerateOutput(table, tokenStream);
             //viewer.GenerateOutput(table, tokenStream);
             //tokenStream.Reset();
             //Console.WriteLine(exec.GenerateOutput(table, tokenStream) ? "Valid" : "Invalid");
@@ -50,8 +50,8 @@ namespace MParseFront
             //var parserBuilder = new ParserBuilder("TestNamespace", productions, symbols, tt);
             //var s = parserBuilder.GetCode(new CSharpCodeProvider(), new CodeGeneratorOptions());
             ParserTemplate pt = new ParserTemplate();
-            pt.Init("TestNamespace", productions, symbols, tt);
-            File.WriteAllText("out2.cs", pt.TransformText());
+            pt.Init("GrammarParser", productions, symbols, tt);
+            File.WriteAllText("grammargrammar.cs", pt.TransformText());
         }
     }
 }

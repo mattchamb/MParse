@@ -56,7 +56,7 @@ foreach(var symbol in _symbols)
 if(symbol is Terminal)
 {
 #>
-        void Visit_<#= ((Terminal)symbol).Name #>(<#= ((Terminal)symbol).Name #> terminal);
+        void Visit(<#= ((Terminal)symbol).Name #> terminal);
 <#
 }
 else
@@ -65,13 +65,54 @@ foreach(var prod in _productions.Where(x => x.Head == symbol))
 {
 var className = GetClassName(prod);
 #>
-        void Visit_<#= className #>(<#= className #> nonTerminal);
+        void Visit(<#= className #> nonTerminal);
 <#
 }
 }
 }
 #>
     }
+
+	public class TreeVisitor : IParseTreeVisitor
+    {
+<#
+foreach(var symbol in _symbols)
+{
+if(symbol is Terminal)
+{
+#>
+
+        public void Visit(<#= ((Terminal)symbol).Name #> terminal)
+		{
+
+		}
+<#
+}
+else
+{
+foreach(var prod in _productions.Where(x => x.Head == symbol))
+{
+var className = GetClassName(prod);
+#>
+        public void Visit(<#= className #> nonTerminal)
+		{
+<#
+for(int i = 0; i < prod.Length; i++)
+{
+#>
+			nonTerminal.T<#= i #>.AcceptVisitor(this);
+<#
+}
+#>
+		}
+<#
+}
+}
+}
+#>
+    }
+
+	
 
     public abstract class <#= Constants.TreeNode #>
     {
@@ -138,6 +179,11 @@ if (symbol is Terminal)
         {
         }
 
+		public override void AcceptVisitor(IParseTreeVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
         public override ActionResult Action(Stack<int> stateStack, Stack<<#= Constants.TreeNode #>> parseStack)
         {
             int currentState = stateStack.Peek();
@@ -145,6 +191,10 @@ if (symbol is Terminal)
 foreach (var state in _table.States)
 {
 var action = _table[state, symbol];
+if (action.Action == ParserAction.Error)
+{
+continue;
+}
 #>
             if(currentState == <#= state.StateId #>)
             {
@@ -180,14 +230,6 @@ if (action.Action == ParserAction.Accept)
 {
 #>
                 return ActionResult.Accept;
-<#
-}
-#>
-<#
-if (action.Action == ParserAction.Error)
-{
-#>
-                return ActionResult.Error;
 <#
 }
 #>
@@ -281,6 +323,11 @@ for(int i = 0; i < prod.Length; i++)
 #>
             }.Reverse().ToArray();
             return new <#= className #>(nodes);
+        }
+
+		public override void AcceptVisitor(IParseTreeVisitor visitor)
+        {
+            visitor.Visit(this);
         }
     }
 
