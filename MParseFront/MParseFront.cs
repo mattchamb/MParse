@@ -28,13 +28,15 @@ namespace MParseFront
             IOutputGenerator viewer = new ExecutionViewer();
 
             ITokenStream tokenStream = new TestTokenStream();
+            
+
 
             var table = new TransitionTable(grammar, grammarOperator);
 
             //exec.GenerateOutput(table, tokenStream);
             //viewer.GenerateOutput(table, tokenStream);
 
-            //CreateClasses(grammar.Productions, grammar.Symbols, table);
+            CreateClasses(grammar.Productions, grammar.Symbols, table);
 
             dotOutputGenerator.GenerateOutput(table, tokenStream);
             //viewer.GenerateOutput(table, tokenStream);
