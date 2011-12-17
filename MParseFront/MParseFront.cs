@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using FileProvider = MParse.GrammarProviders.FileProvider;
 using Microsoft.CSharp;
 using MParse.Core;
 using MParse.Core.GrammarElements;
@@ -18,18 +19,17 @@ namespace MParseFront
     {
         static void Main(string[] args)
         {
-            IGrammarProvider grammarProvider = new GGrammarProvider();
+            //IGrammarProvider grammarProvider = new GGrammarProvider();
+            IGrammarProvider grammarProvider = new FileProvider.FileGrammarProvider(@"..\..\..\MParse.GrammarProviders\FileProvider\grammar.gm");
             var grammar = grammarProvider.GetGrammar();
-           
+            
             var dotOutputGenerator = new DotOutputGenerator();
 
             var table = new TransitionTable(grammar);
 
+
+
             CreateClasses(grammar.Productions, grammar.Symbols, table);
-
-            //dotOutputGenerator.GenerateOutput(table, tokenStream);
-            
-
         }
 
 

@@ -40,6 +40,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileProvider\AttributeListVisitor.cs" />
+    <Compile Include="FileProvider\FileGrammarProvider.cs" />
+    <Compile Include="FileProvider\GrammarAttribute.cs" />
+    <Compile Include="FileProvider\ItemListVisitor.cs" />
+    <Compile Include="FileProvider\Lexer.cs" />
+    <Compile Include="FileProvider\GrammarTreeVisitor.cs" />
+    <Compile Include="FileProvider\Production.cs" />
+    <Compile Include="FileProvider\ProductionRHSListVisitor.cs" />
+    <Compile Include="FileProvider\TokenListVisitor.cs" />
     <Compile Include="GGrammarProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestGrammarProvider.cs" />
@@ -50,6 +59,9 @@
       <Name>MParse.Core</Name>
     </ProjectReference>
   </ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="FileProvider\grammar.gm" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

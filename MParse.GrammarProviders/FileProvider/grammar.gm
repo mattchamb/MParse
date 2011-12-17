@@ -1,0 +1,63 @@
+@@
+GrammarName = MyGrammar
+@@
+
+%%
+ID
+PROD_EQUALS
+ATTRIBUTE_SEGMENT_IDENTIFIER
+TOKEN_SEGMENT_IDENTIFIER
+PRODUCTION_SEGMENT_IDENTIFIER
+SEMICOLON
+EQUALS
+%%
+
+##
+grammar ::= segment_list;
+
+segment_list ::= segment_list segment
+             ::= segment;
+
+segment ::= attribute_segment
+        ::=  production_segment
+        ::=  token_segment;
+
+production_segment ::= PRODUCTION_SEGMENT_IDENTIFIER production_list PRODUCTION_SEGMENT_IDENTIFIER;
+
+production_list ::= production_list production_statement
+                ::= production_statement;
+
+token_segment ::= TOKEN_SEGMENT_IDENTIFIER token_list TOKEN_SEGMENT_IDENTIFIER;
+
+token_list ::= token_list token_statement
+           ::= token_statement;
+
+token_statement ::= ID;
+
+attribute_segment ::= ATTRIBUTE_SEGMENT_IDENTIFIER attribute_list ATTRIBUTE_SEGMENT_IDENTIFIER;
+
+attribute_list ::= attribute_list attribute_statement
+               ::= attribute_statement;
+
+attribute_statement ::= attrib_id EQUALS attrib_value;
+
+production_statement ::= production_head production_RHS_list SEMICOLON;
+
+production_RHS_list ::= production_RHS_list production_RHS
+                    ::= production_RHS;
+
+production_RHS ::= PROD_EQUALS production_tail;
+
+production_tail ::= item_list;
+
+item_list ::= item_list item
+          ::= item;
+
+item ::= ID;
+
+production_head ::= ID;
+
+attrib_id ::= ID;
+
+attrib_value ::= ID;
+##

@@ -15,7 +15,7 @@
             get { return Singleton; }
         }
 
-        private EndOfStream() : base(-1, "$end")
+        private EndOfStream() : base(-1, "$accept")
         {
         }
 
