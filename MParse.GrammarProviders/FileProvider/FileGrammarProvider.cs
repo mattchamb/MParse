@@ -33,6 +33,7 @@ namespace MParse.GrammarProviders.FileProvider
             var parser = new Parser();
 
             var parseTree = parser.Parse(tokenStream);
+
             var grammarCreator = new GrammarTreeVisitor();
 
             parseTree.AcceptVisitor(grammarCreator);
@@ -80,7 +81,7 @@ namespace MParse.GrammarProviders.FileProvider
 
             
 
-            var endOfStream = new EndOfStream();
+            var endOfStream = EndOfStream.Instance;
             terminals.Add(endOfStream.Name, endOfStream);
 
             var startAugmentedSymbol = new NonTerminal(_symbolId++, AugmentedStart);

@@ -10,6 +10,8 @@ TOKEN_SEGMENT_IDENTIFIER
 PRODUCTION_SEGMENT_IDENTIFIER
 SEMICOLON
 EQUALS
+CLOSE_BRACKET
+OPEN_BRACKET
 %%
 
 ##
@@ -47,12 +49,15 @@ production_RHS_list ::= production_RHS_list production_RHS
                     ::= production_RHS;
 
 production_RHS ::= PROD_EQUALS production_tail;
-
-production_tail ::= item_list;
+			   
+production_tail ::= tag item_list
+                ::= item_list;
+				
+tag ::= OPEN_BRACKET ID CLOSE_BRACKET;
 
 item_list ::= item_list item
           ::= item;
-
+		  
 item ::= ID;
 
 production_head ::= ID;
