@@ -38,7 +38,7 @@ namespace MParse.GrammarProviders
                                {T.Id,       new Terminal    ((int) T.Id,     T.Id.ToString())},
                                {T.Lparen,   new Terminal    ((int) T.Lparen, T.Lparen.ToString())},
                                {T.Rparen,   new Terminal    ((int) T.Rparen, T.Rparen.ToString())},
-                               {T.EOF,   new EndOfStream    ()}
+                               {T.EOF,   EndOfStream.Instance}
                            };
             _productions = new List<Production>
                                {

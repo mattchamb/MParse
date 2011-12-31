@@ -1,7 +1,7 @@
 ﻿<#@ template language="C#" inherits="ParserCodeGenBase" #>
 <#@ import namespace="MParse.Core.GrammarElements" #>
 <#@ import namespace="MParse.Core" #>
-<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Linq" #> 
 namespace <#= _codeNamespace #>
 {
     using System;
@@ -48,41 +48,18 @@ namespace <#= _codeNamespace #>
         }
     }
 
-    public interface IParseTreeVisitor
+	public abstract class TreeVisitorBase
     {
 <#
 foreach(var symbol in _symbols)
 {
 if(symbol is Terminal)
 {
-#>
-        void Visit(<#= ((Terminal)symbol).Name #> terminal);
-<#
-}
-else
-{
-foreach(var prod in _productions.Where(x => x.Head == symbol))
-{
-var className = GetClassName(prod);
-#>
-        void Visit(<#= className #> nonTerminal);
-<#
-}
-}
-}
-#>
-    }
-
-	public class TreeVisitor : IParseTreeVisitor
-    {
-<#
-foreach(var symbol in _symbols)
-{
-if(symbol is Terminal)
-{
+if(symbol.Name.StartsWith("$"))
+continue;
 #>
 
-        public void Visit(<#= ((Terminal)symbol).Name #> terminal)
+        public virtual void Visit(<#= symbol.Name #> terminal)
 		{
 
 		}
@@ -92,9 +69,11 @@ else
 {
 foreach(var prod in _productions.Where(x => x.Head == symbol))
 {
+if(prod.Head.Name.StartsWith("$"))
+continue;
 var className = GetClassName(prod);
 #>
-        public void Visit(<#= className #> nonTerminal)
+        public virtual void Visit(<#= className #> nonTerminal)
 		{
 <#
 for(int i = 0; i < prod.Length; i++)
@@ -172,6 +151,8 @@ foreach (var symbol in _symbols)
 {
 if (symbol is Terminal)
 {
+if(symbol.Name.StartsWith("$"))
+continue;
 #>
     public partial class <#= symbol.Name #> : <#= Constants.TerminalBaseClassName #>
     {
@@ -179,7 +160,7 @@ if (symbol is Terminal)
         {
         }
 
-		public override void AcceptVisitor(IParseTreeVisitor visitor)
+		public override void AcceptVisitor(TreeVisitorBase visitor)
         {
             visitor.Visit(this);
         }
@@ -188,7 +169,7 @@ if (symbol is Terminal)
         {
             int currentState = stateStack.Peek();
 <#
-foreach (var state in _table.States)
+foreach (var state in _table.StateMap.States)
 {
 var action = _table[state, symbol];
 if (action.Action == ParserAction.Error)
@@ -245,6 +226,8 @@ if (action.Action == ParserAction.Accept)
 }
 else
 {
+if(symbol.Name.StartsWith("$"))
+continue;
 #>
     public abstract class <#= symbol.Name #> : <#= Constants.TreeNode #>, <#= Constants.ReductionInterfaceName #>
     {
@@ -252,7 +235,7 @@ else
         {
             int currentState = stateStack.Peek();
 <#
-foreach (var state in _table.States)
+foreach (var state in _table.StateMap.States)
 {
 var action = _table[state, symbol];
 if (action.Action == ParserAction.Goto)
@@ -279,6 +262,8 @@ if (action.Action == ParserAction.Goto)
 foreach(var symbol in _symbols.Where(x => x is NonTerminal))
 foreach(var prod in _productions.Where(x => x.Head == symbol ))
 {
+if(prod.Head.Name.StartsWith("$"))
+continue;
 var className = GetClassName(prod);
 #>
     public partial class <#= className #> : <#= prod.Head #>
@@ -325,7 +310,7 @@ for(int i = 0; i < prod.Length; i++)
             return new <#= className #>(nodes);
         }
 
-		public override void AcceptVisitor(IParseTreeVisitor visitor)
+		public override void AcceptVisitor(TreeVisitorBase visitor)
         {
             visitor.Visit(this);
         }

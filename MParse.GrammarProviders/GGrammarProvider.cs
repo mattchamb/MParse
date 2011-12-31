@@ -78,7 +78,7 @@ namespace MParse.GrammarProviders
                 {T.PRODUCTION_SEGMENT_IDENTIFIER, new Terminal ((int) T.PRODUCTION_SEGMENT_IDENTIFIER, T.PRODUCTION_SEGMENT_IDENTIFIER.ToString())},
                 {T.SEMICOLON, new Terminal ((int) T.SEMICOLON, T.SEMICOLON.ToString())},
                 {T.ID, new Terminal ((int) T.ID, T.ID.ToString())},
-                {T.EOF, new EndOfStream ()}
+                {T.EOF, EndOfStream.Instance}
             };
             _productions = new List<Production>
             {

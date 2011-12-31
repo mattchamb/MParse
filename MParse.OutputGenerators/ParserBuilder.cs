@@ -9,9 +9,9 @@ using System.Text;
 using MParse.Core;
 using MParse.Core.GrammarElements;
 
-namespace MParseFront
+namespace MParse.OutputGenerators
 {
-    class ParserBuilder
+    public class ParserBuilder
     {
 
         private static class Constants
@@ -245,7 +245,7 @@ namespace MParseFront
             var states = new CodeArgumentReferenceExpression(Constants.StateStackVarName);
             result.Statements.Add(DeclareVariable(new CodeTypeReference(typeof(int)), "currentState", new CodeMethodInvokeExpression(states, "Peek")));
 
-            foreach (var state in _transitionTable.States)
+            foreach (var state in _transitionTable.StateMap.States)
             {
                 var action = _transitionTable[state, head];
                 if (action.Action == ParserAction.Goto)
@@ -361,7 +361,7 @@ namespace MParseFront
 
             result.Statements.Add(new CodeVariableDeclarationStatement(new CodeTypeReference(typeof(int)), "currentState", new CodeMethodInvokeExpression(states, "Peek")));
             
-            foreach (var state in table.States)
+            foreach (var state in table.StateMap.States)
             {
                 var ifState = new CodeConditionStatement(new CodeBinaryOperatorExpression(new CodeVariableReferenceExpression("currentState"), CodeBinaryOperatorType.ValueEquality, new CodePrimitiveExpression(state.StateId)));
                 var action = table[state, currToken];

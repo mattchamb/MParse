@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text;
-using Microsoft.VisualStudio.TextTemplating;
 using MParse.Core.GrammarElements;
 using MParse.Core;
+using Microsoft.VisualStudio.TextTemplating;
 
-namespace MParseFront
+namespace MParse.OutputGenerators
 {
     public abstract class ParserCodeGenBase : TextTransformation
     {

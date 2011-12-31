@@ -9,9 +9,11 @@ namespace MParse.Core
     public class StateTransitionMap
     {
         private readonly Dictionary<ParserState, Dictionary<GrammarSymbol, ParserState>> _stateTransitions;
+        private readonly HashSet<ParserState> _states;
 
         public StateTransitionMap()
         {
+            _states = new HashSet<ParserState>();
             _stateTransitions = new Dictionary<ParserState, Dictionary<GrammarSymbol, ParserState>>();
         }
 
@@ -22,6 +24,8 @@ namespace MParse.Core
             if (_stateTransitions[transitionFrom].ContainsKey(symbol))
                 throw new Exception("State conflict. Trying to add a transition for a state when one already exists for the specified grammar symbol.");
             _stateTransitions[transitionFrom][symbol] = transitionTo;
+            _states.Add(transitionFrom);
+            _states.Add(transitionTo);
         }
 
         /// <summary>
@@ -45,6 +49,11 @@ namespace MParse.Core
         public bool FromStateExists(ParserState transitionFrom)
         {
             return _stateTransitions.ContainsKey(transitionFrom);
+        }
+
+        public IEnumerable<ParserState> States
+        {
+            get { return _states; }
         }
     }
 }

@@ -1,24 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using MParse.Core.GrammarElements;
-using MParse.Core.Interfaces;
 
 namespace MParse.Core
 {
     public class TransitionTable
     {
         private readonly Dictionary<ParserState, Dictionary<GrammarSymbol, TransitionAction>> _table;
-        private readonly IEnumerable<ParserState> _states;
         private readonly StateTransitionMap _stateMap;
         private readonly Grammar _grammar;
-        private readonly IGrammarOperator _grammarOperator;
-
-        public IEnumerable<ParserState> States
-        {
-            get { return _states; }
-        }
 
         public StateTransitionMap StateMap
         {
@@ -38,25 +28,21 @@ namespace MParse.Core
             }
         }
 
-        public TransitionTable(Grammar grammar, IGrammarOperator grammarOperator)
+        public TransitionTable(Grammar grammar)
         {
             if (grammar == null)
                 throw new ArgumentNullException("grammar");
-            if (grammarOperator == null)
-                throw new ArgumentNullException("grammarOperator");
 
             _table = new Dictionary<ParserState, Dictionary<GrammarSymbol, TransitionAction>>();
             _grammar = grammar;
-            _grammarOperator = grammarOperator;
-            var stateTuple = _grammarOperator.CreateStates();
-            _states = stateTuple.Item1;
-            _stateMap = stateTuple.Item2;
+            _stateMap = grammar.CreateStateMap();
             ConstructTable();
         }
 
         private void ConstructTable()
         {
-            foreach (var state in _states)
+
+            foreach (var state in _stateMap.States)
             {
                 var dict = new Dictionary<GrammarSymbol, TransitionAction>();
                 _table.Add(state, dict);
@@ -68,7 +54,7 @@ namespace MParse.Core
                     }
                     if (!item.HasNextToken)
                     {
-                        var followSet = _grammarOperator.FollowSet(item.ItemProduction.Head);
+                        var followSet = _grammar.FollowSet(item.ItemProduction.Head);
                         foreach (var symbol in followSet)
                         {
                             dict.Add(symbol, new TransitionAction(ParserAction.Reduce, item.ItemProduction));
@@ -77,7 +63,7 @@ namespace MParse.Core
                 }
                 if (state.Items.Contains(_grammar.AugmentedState.AdvanceDot()))
                 {
-                    dict[new EndOfStream()] = new TransitionAction(ParserAction.Accept);
+                    dict[EndOfStream.Instance] = new TransitionAction(ParserAction.Accept);
                 }
                 var symbols = _grammar.Symbols;
                 foreach (var symbol in symbols)

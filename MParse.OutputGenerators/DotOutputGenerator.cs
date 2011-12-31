@@ -8,24 +8,23 @@ using MParse.Core.Interfaces;
 
 namespace MParse.OutputGenerators
 {
-    public class DotOutputGenerator : IOutputGenerator
+    public class DotOutputGenerator
     {
-        public bool GenerateOutput(TransitionTable transitionTable, ITokenStream tokenStream)
+        public string GenerateOutput(TransitionTable transitionTable)
         {
             var builder = new StringBuilder();
             builder.AppendLine("digraph G {");
             builder.AppendLine("node[shape=box];");
             WriteTransitions(builder, transitionTable);
             builder.AppendLine("}");
-            Console.WriteLine(builder);
-            return true;
+            return builder.ToString();
         }
 
         private void WriteTransitions(StringBuilder output, TransitionTable table)
         {
-            var visited = table.States.ToDictionary(state => state, state => false);
+            var visited = table.StateMap.States.ToDictionary(state => state, state => false);
             var plan = new Queue<ParserState>();
-            plan.Enqueue(table.States.First());
+            plan.Enqueue(table.StateMap.States.First());
             while (plan.Count > 0)
             {
                 var currState = plan.Dequeue();

@@ -1,6 +1,4 @@
-﻿using MParse.Core.GrammarElements;
-
-namespace MParse.Core.Interfaces
+﻿namespace MParse.Core.Interfaces
 {
     public interface IGrammarProvider
     {
